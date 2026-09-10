@@ -8,6 +8,7 @@ import SearchHub from './components/SearchHub';
 import SmartContractStudio from './components/SmartContractStudio';
 import AdminConsole from './components/AdminConsole';
 import AuditLogViewer from './components/AuditLogViewer';
+import { ToastProvider } from './components/Toast';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -53,66 +54,68 @@ export default function App() {
   };
 
   return (
-    <div className="app-layout">
-      <Header 
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        currentUser={currentUser}
-        onOpenAuth={() => setIsAuthModalOpen(true)}
-        onLogout={handleLogout}
-        currentContractTitle={activeContractTitle}
-      />
+    <ToastProvider>
+      <div className="app-layout">
+        <Header 
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          currentUser={currentUser}
+          onOpenAuth={() => setIsAuthModalOpen(true)}
+          onLogout={handleLogout}
+          currentContractTitle={activeContractTitle}
+        />
 
-      <main className="main-viewport">
-        {activeTab === 'dashboard' && (
-          <Dashboard 
-            onSelectContract={handleSelectContract}
-            onLoadSample={handleLoadSample}
-            loading={loading}
-            setLoading={setLoading}
-          />
-        )}
+        <main className="main-viewport">
+          {activeTab === 'dashboard' && (
+            <Dashboard 
+              onSelectContract={handleSelectContract}
+              onLoadSample={handleLoadSample}
+              loading={loading}
+              setLoading={setLoading}
+            />
+          )}
 
-        {activeTab === 'reviewer' && (
-          <Reviewer 
-            contractId={activeContractId || 'cnt_sample_msa'}
-            jobId={activeJobId}
-            onBackToDashboard={() => setActiveTab('dashboard')}
-            currentUser={currentUser}
-          />
-        )}
+          {activeTab === 'reviewer' && (
+            <Reviewer 
+              contractId={activeContractId || 'cnt_sample_msa'}
+              jobId={activeJobId}
+              onBackToDashboard={() => setActiveTab('dashboard')}
+              currentUser={currentUser}
+            />
+          )}
 
-        {activeTab === 'search' && (
-          <SearchHub 
-            onSelectContract={handleSelectContract}
-          />
-        )}
+          {activeTab === 'search' && (
+            <SearchHub 
+              onSelectContract={handleSelectContract}
+            />
+          )}
 
-        {activeTab === 'smart_contracts' && (
-          <SmartContractStudio 
-            selectedContractId={activeContractId}
-          />
-        )}
+          {activeTab === 'smart_contracts' && (
+            <SmartContractStudio 
+              selectedContractId={activeContractId}
+            />
+          )}
 
-        {activeTab === 'admin' && (
-          <AdminConsole 
-            currentUser={currentUser}
-          />
-        )}
+          {activeTab === 'admin' && (
+            <AdminConsole 
+              currentUser={currentUser}
+            />
+          )}
 
-        {activeTab === 'audit' && (
-          <AuditLogViewer />
-        )}
-      </main>
+          {activeTab === 'audit' && (
+            <AuditLogViewer />
+          )}
+        </main>
 
-      <AuthModal 
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onAuthSuccess={(user) => {
-          setCurrentUser(user);
-          setIsAuthModalOpen(false);
-        }}
-      />
-    </div>
+        <AuthModal 
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          onAuthSuccess={(user) => {
+            setCurrentUser(user);
+            setIsAuthModalOpen(false);
+          }}
+        />
+      </div>
+    </ToastProvider>
   );
 }

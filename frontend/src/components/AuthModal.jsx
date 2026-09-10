@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, Lock, Mail, User, Shield, AlertCircle } from 'lucide-react';
+import { X, Lock, Mail, User, Shield, AlertCircle, Sparkles, Key, Check } from 'lucide-react';
 import { api, setAuthToken, saveUser } from '../api/client';
+import { useToast } from './Toast';
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -10,6 +11,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   const [role, setRole] = useState('Analyst');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { addToast } = useToast();
 
   if (!isOpen) return null;
 
@@ -37,6 +39,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
       setAuthToken(res.access_token);
       saveUser(res.user);
       onAuthSuccess(res.user);
+      addToast(`Welcome back, ${res.user.username}!`, 'success', 3000);
       onClose();
     } catch (err) {
       setError(err.message || 'Authentication failed');
@@ -56,6 +59,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
       setAuthToken(res.access_token);
       saveUser(res.user);
       onAuthSuccess(res.user);
+      addToast(`Authenticated as demo ${demoRole}!`, 'success', 3000);
       onClose();
     } catch (err) {
       setError(err.message || 'Demo login failed');
@@ -68,12 +72,17 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a' }}>
-            {isLogin ? 'Sign In to LegalSight' : 'Create LegalSight Account'}
-          </h2>
+          <div>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1c1917', fontFamily: 'var(--font-serif)' }}>
+              {isLogin ? 'Sign In to LegalSight' : 'Create LegalSight Account'}
+            </h2>
+            <p style={{ fontSize: '0.775rem', color: '#78716c' }}>
+              Access enterprise contract review, playbooks, and audit ledgers.
+            </p>
+          </div>
           <button 
             onClick={onClose} 
-            style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+            style={{ background: 'transparent', border: 'none', color: '#948b81', cursor: 'pointer' }}
           >
             <X size={18} />
           </button>
@@ -81,14 +90,15 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 
         {/* 1-Click Demo Accounts Banner */}
         <div style={{ 
-          background: '#f8fafc', 
-          border: '1px solid var(--border-subtle)', 
-          borderRadius: '8px', 
-          padding: '0.75rem', 
+          background: '#fdfbf7', 
+          border: '1px solid #ebd8b7', 
+          borderRadius: '10px', 
+          padding: '0.85rem', 
           marginBottom: '1.25rem' 
         }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#475569', marginBottom: '0.4rem' }}>
-            ⚡ 1-Click Instant Demo Login:
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#78350f', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Sparkles size={14} color="#c29037" />
+            <span>Instant 1-Click Demo Credentials:</span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
             <button 
@@ -96,93 +106,106 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
               className="btn btn-secondary btn-sm" 
               onClick={() => handleDemoLogin('Analyst')}
               disabled={loading}
-              style={{ fontSize: '0.75rem' }}
+              style={{ fontSize: '0.75rem', background: '#ffffff' }}
             >
-              <User size={12} />
-              <span>Analyst Demo</span>
+              <User size={13} color="#1c1917" />
+              <span>Login as <strong>Analyst</strong></span>
             </button>
             <button 
               type="button"
               className="btn btn-secondary btn-sm" 
               onClick={() => handleDemoLogin('Admin')}
               disabled={loading}
-              style={{ fontSize: '0.75rem' }}
+              style={{ fontSize: '0.75rem', background: '#ffffff' }}
             >
-              <Shield size={12} color="#92400e" />
-              <span>Admin Demo</span>
+              <Shield size={13} color="#854d0e" />
+              <span>Login as <strong>Admin</strong></span>
             </button>
           </div>
         </div>
 
         {error && (
           <div style={{ 
-            background: '#fef2f2', 
+            background: '#fee2e2', 
             border: '1px solid #fecaca', 
             color: '#991b1b', 
-            padding: '0.65rem', 
+            padding: '0.65rem 0.85rem', 
             borderRadius: '6px', 
             fontSize: '0.775rem', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '0.4rem',
-            marginBottom: '0.85rem' 
+            marginBottom: '1rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.45rem'
           }}>
-            <AlertCircle size={15} />
+            <AlertCircle size={14} />
             <span>{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
+        {/* Form */}
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+          <div>
             <label className="form-label">
-              {isLogin ? 'Username or Email' : 'Username'}
+              {isLogin ? 'Username or Email Address' : 'Username'}
             </label>
-            <input 
-              className="form-input"
-              type="text" 
-              required 
-              placeholder={isLogin ? 'analyst or analyst@legalsight.ai' : 'sarah_counsel'}
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
+            <div style={{ position: 'relative' }}>
+              <User size={14} style={{ position: 'absolute', left: '10px', top: '12px', color: '#948b81' }} />
+              <input 
+                type="text" 
+                className="form-input" 
+                style={{ paddingLeft: '2.2rem' }}
+                placeholder={isLogin ? 'analyst@legalsight.ai' : 'counsel_sarah'}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
           </div>
 
           {!isLogin && (
-            <div className="form-group">
+            <div>
               <label className="form-label">Email Address</label>
-              <input 
-                className="form-input"
-                type="email" 
-                required 
-                placeholder="sarah@lawfirm.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+              <div style={{ position: 'relative' }}>
+                <Mail size={14} style={{ position: 'absolute', left: '10px', top: '12px', color: '#948b81' }} />
+                <input 
+                  type="email" 
+                  className="form-input" 
+                  style={{ paddingLeft: '2.2rem' }}
+                  placeholder="sarah.connor@firm.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
             </div>
           )}
 
-          <div className="form-group">
+          <div>
             <label className="form-label">Password</label>
-            <input 
-              className="form-input"
-              type="password" 
-              required 
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <div style={{ position: 'relative' }}>
+              <Lock size={14} style={{ position: 'absolute', left: '10px', top: '12px', color: '#948b81' }} />
+              <input 
+                type="password" 
+                className="form-input" 
+                style={{ paddingLeft: '2.2rem' }}
+                placeholder="••••••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
           </div>
 
           {!isLogin && (
-            <div className="form-group">
-              <label className="form-label">Role</label>
+            <div>
+              <label className="form-label">Account Role</label>
               <select 
                 className="form-select"
-                value={role} 
+                value={role}
                 onChange={(e) => setRole(e.target.value)}
               >
-                <option value="Analyst">Analyst (Reviewer & Audit)</option>
-                <option value="Admin">Admin (Full System & User Management)</option>
+                <option value="Analyst">Legal Analyst (Review & Redline)</option>
+                <option value="Admin">Admin (Playbook Tuning & Management)</option>
               </select>
             </div>
           )}
@@ -190,21 +213,21 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
           <button 
             type="submit" 
             className="btn btn-primary" 
-            style={{ width: '100%', marginTop: '0.35rem' }}
             disabled={loading}
+            style={{ marginTop: '0.5rem', width: '100%', padding: '0.7rem' }}
           >
-            {loading ? 'Authenticating...' : isLogin ? 'Sign In' : 'Create Account'}
+            {loading ? 'Processing...' : (isLogin ? 'Sign In to Workspace' : 'Create Account')}
           </button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.8rem', color: '#64748b' }}>
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
+        <div style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: '0.775rem', color: '#78716c' }}>
+          {isLogin ? "Don't have an account yet?" : "Already registered?"}{' '}
           <button 
             type="button"
             onClick={() => { setIsLogin(!isLogin); setError(null); }}
-            style={{ background: 'transparent', border: 'none', color: '#0f172a', cursor: 'pointer', fontWeight: 600 }}
+            style={{ background: 'transparent', border: 'none', color: '#c29037', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
           >
-            {isLogin ? 'Sign Up' : 'Sign In'}
+            {isLogin ? 'Create one now' : 'Sign in instead'}
           </button>
         </div>
       </div>

@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Download, RefreshCw, CheckCircle, Shield, FileText, 
-  Sparkles, Layers, Users, History, AlertTriangle, ArrowLeft
+  Sparkles, Layers, Users, History, AlertTriangle, ArrowLeft,
+  Sliders, Award, CheckCircle2, ChevronRight, Share2, Copy
 } from 'lucide-react';
 import { api } from '../api/client';
 import DocumentPane from './DocumentPane';
 import RiskRadar from './RiskRadar';
 import EntityList from './EntityList';
 import ClauseCard from './ClauseCard';
+import SignOffModal from './SignOffModal';
+import { useToast } from './Toast';
 
 export default function Reviewer({ 
   contractId, 
@@ -17,12 +20,18 @@ export default function Reviewer({
 }) {
   const [contractData, setContractData] = useState(null);
   const [analysisState, setAnalysisState] = useState(null);
-  const [activeTab, setActiveTab] = useState('summary'); // 'summary' | 'entities' | 'clauses' | 'audit'
+  const [activeTab, setActiveTab] = useState('summary'); // 'summary' (Risk Radar & Scorecard) | 'clauses' | 'entities' | 'audit'
   const [activeHighlight, setActiveHighlight] = useState(null);
   const [selectedProfile, setSelectedProfile] = useState('Vendor Standard');
+  const [riskFilter, setRiskFilter] = useState('ALL');
+  const [categoryFilter, setCategoryFilter] = useState('ALL');
+  const [clauseSearch, setClauseSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [reEvaluating, setReEvaluating] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
   const [error, setError] = useState(null);
+  const [isSignOffModalOpen, setIsSignOffModalOpen] = useState(false);
+  const { addToast } = useToast();
 
   useEffect(() => {
     if (contractId) {
@@ -61,17 +70,19 @@ export default function Reviewer({
     const activeJobId = jobId || (contractData && contractData.job_id);
     if (!activeJobId) return;
 
-    setLoading(true);
+    setReEvaluating(true);
     try {
       await api.reEvaluateProfile(activeJobId, newProfile);
       const updatedJob = await api.getJobState(activeJobId);
       setAnalysisState(updatedJob);
       const logsRes = await api.getAuditEvents(contractId);
       setAuditLogs(logsRes || []);
+      addToast(`Risk recalculated under '${newProfile}' playbook`, 'success', 3000);
     } catch (err) {
       console.error("Error re-evaluating risk profile:", err);
+      addToast('Failed to recalculate risk profile', 'error');
     } finally {
-      setLoading(false);
+      setReEvaluating(false);
     }
   };
 
@@ -90,6 +101,15 @@ export default function Reviewer({
     }
   };
 
+  const handleApproveAllLowRisk = async () => {
+    if (!analysisState?.clauses) return;
+    const lowRiskClauses = analysisState.clauses.filter(c => c.risk_level === 'LOW' && !c.user_approved);
+    for (const c of lowRiskClauses) {
+      await handleApproveClause(c.id);
+    }
+    addToast(`Approved all ${lowRiskClauses.length} low-risk provisions`, 'success', 2500);
+  };
+
   const handleUpdateRedline = async (clauseId, replacementText, rationale) => {
     const activeJobId = jobId || (contractData && contractData.job_id);
     if (!activeJobId) return;
@@ -103,27 +123,26 @@ export default function Reviewer({
     }
   };
 
-  const handleFinalizeReview = async () => {
+  const handleFinalizeReview = async (signOffData) => {
     const activeJobId = jobId || (contractData && contractData.job_id);
     if (!activeJobId) return;
 
-    setLoading(true);
     try {
-      await api.finalizeReview(activeJobId, currentUser ? currentUser.username : 'Senior Legal Counsel');
+      await api.finalizeReview(activeJobId, signOffData?.counselName || (currentUser ? currentUser.username : 'Senior Legal Counsel'));
       const updatedJob = await api.getJobState(activeJobId);
       setAnalysisState(updatedJob);
       const logsRes = await api.getAuditEvents(contractId);
       setAuditLogs(logsRes || []);
+      addToast('Contract review signed off and sealed!', 'success', 3500);
     } catch (err) {
       console.error("Error finalizing review:", err);
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleExportPdf = () => {
     const idToUse = (contractData && contractData.job_id) || jobId || contractId;
     window.open(api.exportPdfUrl(idToUse), '_blank');
+    addToast('Generating Executive Summary PDF...', 'info', 2500);
   };
 
   const handleExportJson = async () => {
@@ -134,8 +153,9 @@ export default function Reviewer({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `LegalSight_Analysis_${contractId}.json`;
+      a.download = `LegalSight_Audit_${contractId}.json`;
       a.click();
+      addToast('Audit JSON downloaded', 'success', 2500);
     } catch (err) {
       console.error("Error exporting JSON:", err);
     }
@@ -143,200 +163,339 @@ export default function Reviewer({
 
   if (loading && !contractData) {
     return (
-      <div style={{ textAlign: 'center', padding: '4rem', color: '#64748b' }}>
-        <RefreshCw size={28} className="animate-spin" style={{ margin: '0 auto 0.75rem', color: '#0f172a' }} />
-        <div style={{ fontSize: '1rem', fontWeight: 600, color: '#0f172a' }}>
-          Loading Contract & Running Analysis...
+      <div style={{ textAlign: 'center', padding: '6rem 2rem', color: '#78716c' }}>
+        <RefreshCw size={32} className="animate-spin" style={{ margin: '0 auto 1rem', color: '#1c1917' }} />
+        <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#1c1917', fontFamily: 'var(--font-serif)' }}>
+          Ingesting Legal Contract & Running Neural Risk Evaluation...
+        </div>
+        <div style={{ fontSize: '0.8rem', color: '#a8a29e', marginTop: '0.35rem' }}>
+          Performing OCR sanitization, Named Entity Recognition, and Playbook risk scoring
         </div>
       </div>
     );
   }
 
-  if (error || !contractData) {
-    return (
-      <div className="glass-card" style={{ padding: '2rem', textAlign: 'center', maxWidth: '540px', margin: '3rem auto' }}>
-        <AlertTriangle size={32} color="#991b1b" style={{ margin: '0 auto 0.75rem' }} />
-        <h3 style={{ fontSize: '1.1rem', marginBottom: '0.4rem', color: '#0f172a' }}>Contract Not Found</h3>
-        <p style={{ color: '#64748b', marginBottom: '1.25rem', fontSize: '0.85rem' }}>{error || 'Unable to retrieve analysis state for this contract.'}</p>
-        <button className="btn btn-primary btn-sm" onClick={onBackToDashboard}>
-          Return to Dashboard
-        </button>
-      </div>
-    );
-  }
+  const clauses = analysisState?.clauses || [];
+  const entities = analysisState?.entities || [];
+  const riskSummary = analysisState?.risk_summary;
 
-  const rawText = contractData.raw_text || '';
-  const metadata = contractData.metadata || {};
-  const entities = analysisState ? analysisState.entities : [];
-  const clauses = analysisState ? analysisState.clauses : [];
-  const riskSummary = analysisState ? analysisState.risk_summary : null;
+  const approvedCount = clauses.filter(c => c.user_approved).length;
+  const totalCount = clauses.length;
+  const progressPercent = totalCount > 0 ? Math.round((approvedCount / totalCount) * 100) : 0;
+
+  // Filter clauses
+  const filteredClauses = clauses.filter(c => {
+    const matchesRisk = riskFilter === 'ALL' || c.risk_level === riskFilter;
+    const matchesCat = categoryFilter === 'ALL' || c.category === categoryFilter;
+    const matchesSearch = !clauseSearch.trim() || 
+      c.title.toLowerCase().includes(clauseSearch.toLowerCase()) || 
+      c.text.toLowerCase().includes(clauseSearch.toLowerCase()) ||
+      (c.category && c.category.toLowerCase().includes(clauseSearch.toLowerCase()));
+    return matchesRisk && matchesCat && matchesSearch;
+  });
+
+  const categories = Array.from(new Set(clauses.map(c => c.category))).filter(Boolean);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', height: '100%' }}>
-      {/* Top Reviewer Action Bar */}
-      <div className="glass-card" style={{ padding: '0.65rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+    <div className="reviewer-container">
+      {/* Top Reviewer Command Bar */}
+      <div className="reviewer-command-bar">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
           <button className="btn btn-secondary btn-sm" onClick={onBackToDashboard}>
-            <ArrowLeft size={13} />
+            <ArrowLeft size={14} />
             <span>Repository</span>
           </button>
+
           <div>
-            <div style={{ fontWeight: 700, fontSize: '0.925rem', color: '#0f172a' }}>
-              {metadata.filename || 'Contract Review'}
+            <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#1c1917', fontFamily: 'var(--font-main)' }}>
+              {contractData?.title || 'Contract Review Workspace'}
             </div>
-            <div style={{ fontSize: '0.725rem', color: '#64748b' }}>
-              {metadata.file_type} • {metadata.total_words || rawText.split(' ').length} words • {clauses.length} clauses
+            <div style={{ fontSize: '0.725rem', color: '#78716c', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <span>ID: <code style={{ fontFamily: 'var(--font-mono)' }}>{contractId}</code></span>
+              <span>•</span>
+              <span className={`badge-risk ${riskSummary?.overall_level || 'LOW'}`} style={{ padding: '0.1rem 0.4rem', fontSize: '0.65rem' }}>
+                {riskSummary?.overall_level || 'LOW'} ({riskSummary?.overall_score || 0}/100)
+              </span>
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+        {/* Action Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
           {/* Playbook Selector */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            <span style={{ fontSize: '0.725rem', color: '#64748b', fontWeight: 600 }}>Playbook:</span>
-            <select 
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: '#faf8f4', padding: '0.25rem 0.65rem', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+            <Sliders size={13} color="#c29037" />
+            <span style={{ fontSize: '0.725rem', fontWeight: 700, color: '#44403c' }}>Playbook:</span>
+            <select
               className="form-select"
-              style={{ width: 'auto', padding: '0.25rem 0.5rem', fontSize: '0.775rem' }}
+              style={{ padding: '0.2rem 0.4rem', fontSize: '0.75rem', border: 'none', background: 'transparent', fontWeight: 600, color: '#1c1917', cursor: 'pointer' }}
               value={selectedProfile}
               onChange={(e) => handleProfileChange(e.target.value)}
+              disabled={reEvaluating}
             >
               <option value="Vendor Standard">Vendor Standard</option>
               <option value="M&A Aggressive">M&A Aggressive</option>
               <option value="Strict Compliance">Strict Compliance</option>
               <option value="Balanced Commercial">Balanced Commercial</option>
             </select>
+            {reEvaluating && <RefreshCw size={12} className="animate-spin text-amber-700" />}
           </div>
 
-          <button className="btn btn-outline-indigo btn-sm" onClick={handleExportPdf}>
-            <Download size={12} />
-            <span>Export PDF</span>
-          </button>
+          {/* Review Progress Ring */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', background: '#f4fbf6', border: '1px solid #bbf7d0', padding: '0.35rem 0.75rem', borderRadius: '8px' }}>
+            <CheckCircle size={14} color="#15803d" />
+            <span style={{ fontSize: '0.725rem', fontWeight: 700, color: '#14532d' }}>
+              {approvedCount}/{totalCount} Approved ({progressPercent}%)
+            </span>
+          </div>
 
-          <button className="btn btn-secondary btn-sm" onClick={handleExportJson}>
-            <Download size={12} />
-            <span>JSON</span>
+          {/* Export & Sign-Off Buttons */}
+          <button className="btn btn-secondary btn-sm" onClick={handleExportPdf} title="Export executive report as PDF">
+            <Download size={13} />
+            <span>PDF Brief</span>
           </button>
 
           <button 
-            className="btn btn-primary btn-sm" 
-            onClick={handleFinalizeReview}
-            disabled={analysisState && analysisState.status === 'COMPLETED'}
+            className="btn btn-gold-shimmer btn-sm"
+            onClick={() => setIsSignOffModalOpen(true)}
           >
-            <CheckCircle size={12} />
-            <span>{analysisState && analysisState.status === 'COMPLETED' ? 'Finalized' : 'Finalize Review'}</span>
+            <Award size={14} />
+            <span>Sign-Off & Seal</span>
           </button>
         </div>
       </div>
 
-      {/* Split Pane: Left Source Document | Right Intelligence Console */}
-      <div className="reviewer-container">
-        {/* Left Pane: Original Document View */}
+      {/* Split Panes Grid */}
+      <div className="reviewer-panes-grid">
+        {/* Left Pane: Document Source Reader with Heatmap Gutter */}
         <DocumentPane 
-          rawText={rawText}
-          filename={metadata.filename}
+          rawText={contractData?.raw_text}
+          filename={contractData?.filename}
           activeHighlight={activeHighlight}
           onClearHighlight={() => setActiveHighlight(null)}
+          clauses={clauses}
         />
 
         {/* Right Pane: Intelligence Console */}
-        <div className="pane glass-card">
-          <div className="pane-header">
-            <div className="tabs-nav" style={{ margin: 0, padding: 0, border: 'none' }}>
+        <div className="reviewer-pane">
+          {/* Intelligence Console Header Tabs */}
+          <div className="pane-header" style={{ padding: '0.5rem 1rem' }}>
+            <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap' }}>
+              <button 
+                className={`tab-btn ${activeTab === 'clauses' ? 'active' : ''}`}
+                onClick={() => setActiveTab('clauses')}
+                style={{
+                  background: activeTab === 'clauses' ? '#ffffff' : 'transparent',
+                  border: activeTab === 'clauses' ? '1px solid var(--border-subtle)' : 'none',
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '6px',
+                  fontWeight: activeTab === 'clauses' ? 700 : 500,
+                  fontSize: '0.775rem',
+                  color: activeTab === 'clauses' ? '#1c1917' : '#78716c',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem'
+                }}
+              >
+                <Layers size={13} />
+                <span>Clauses & Redlines ({clauses.length})</span>
+              </button>
+
               <button 
                 className={`tab-btn ${activeTab === 'summary' ? 'active' : ''}`}
                 onClick={() => setActiveTab('summary')}
+                style={{
+                  background: activeTab === 'summary' ? '#ffffff' : 'transparent',
+                  border: activeTab === 'summary' ? '1px solid var(--border-subtle)' : 'none',
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '6px',
+                  fontWeight: activeTab === 'summary' ? 700 : 500,
+                  fontSize: '0.775rem',
+                  color: activeTab === 'summary' ? '#1c1917' : '#78716c',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem'
+                }}
               >
                 <Shield size={13} />
-                <span>Risk Scorecard</span>
+                <span>Risk Radar ({riskSummary?.overall_score || 0}/100)</span>
               </button>
 
               <button 
                 className={`tab-btn ${activeTab === 'entities' ? 'active' : ''}`}
                 onClick={() => setActiveTab('entities')}
+                style={{
+                  background: activeTab === 'entities' ? '#ffffff' : 'transparent',
+                  border: activeTab === 'entities' ? '1px solid var(--border-subtle)' : 'none',
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '6px',
+                  fontWeight: activeTab === 'entities' ? 700 : 500,
+                  fontSize: '0.775rem',
+                  color: activeTab === 'entities' ? '#1c1917' : '#78716c',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem'
+                }}
               >
                 <Users size={13} />
                 <span>Entities ({entities.length})</span>
               </button>
 
               <button 
-                className={`tab-btn ${activeTab === 'clauses' ? 'active' : ''}`}
-                onClick={() => setActiveTab('clauses')}
-              >
-                <Layers size={13} />
-                <span>Clauses ({clauses.length})</span>
-              </button>
-
-              <button 
                 className={`tab-btn ${activeTab === 'audit' ? 'active' : ''}`}
                 onClick={() => setActiveTab('audit')}
+                style={{
+                  background: activeTab === 'audit' ? '#ffffff' : 'transparent',
+                  border: activeTab === 'audit' ? '1px solid var(--border-subtle)' : 'none',
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '6px',
+                  fontWeight: activeTab === 'audit' ? 700 : 500,
+                  fontSize: '0.775rem',
+                  color: activeTab === 'audit' ? '#1c1917' : '#78716c',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem'
+                }}
               >
                 <History size={13} />
-                <span>Audit Trail</span>
+                <span>Ledger ({auditLogs.length})</span>
               </button>
             </div>
           </div>
 
+          {/* Pane Body Content */}
           <div className="pane-body">
-            {activeTab === 'summary' && (
-              <RiskRadar 
-                riskSummary={riskSummary} 
-                riskProfile={selectedProfile} 
-              />
-            )}
-
-            {activeTab === 'entities' && (
-              <EntityList 
-                entities={entities} 
-                onHighlightEntity={(ent) => setActiveHighlight(ent)}
-              />
-            )}
-
+            {/* Tab 1: Clauses & Redlines */}
             {activeTab === 'clauses' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <div style={{ fontSize: '0.775rem', color: '#64748b', marginBottom: '0.35rem' }}>
-                  Categorized clauses extracted by NLP. Click any clause to jump to it in the document.
+              <div>
+                {/* Filter and Search Bar */}
+                <div style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <input 
+                      type="text" 
+                      placeholder="Search clauses by keyword or category..." 
+                      className="form-input" 
+                      style={{ padding: '0.35rem 0.65rem', fontSize: '0.775rem' }}
+                      value={clauseSearch}
+                      onChange={(e) => setClauseSearch(e.target.value)}
+                    />
+                    {clauses.some(c => c.risk_level === 'LOW' && !c.user_approved) && (
+                      <button 
+                        className="btn btn-secondary btn-sm" 
+                        onClick={handleApproveAllLowRisk}
+                        style={{ whiteSpace: 'nowrap', fontSize: '0.7rem' }}
+                        title="Approve all low-risk provisions with 1 click"
+                      >
+                        <CheckCircle2 size={12} color="#15803d" />
+                        <span>Approve Low Risk</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Risk Level Pills */}
+                  <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.7rem', color: '#78716c', fontWeight: 700 }}>Risk Filter:</span>
+                    {['ALL', 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW'].map(level => (
+                      <button
+                        key={level}
+                        onClick={() => setRiskFilter(level)}
+                        style={{
+                          background: riskFilter === level ? '#1c1917' : '#f4f0e8',
+                          color: riskFilter === level ? '#ffffff' : '#57534e',
+                          border: 'none',
+                          padding: '0.2rem 0.55rem',
+                          borderRadius: '4px',
+                          fontSize: '0.675rem',
+                          fontWeight: 700,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {level} {level !== 'ALL' && `(${clauses.filter(c => c.risk_level === level).length})`}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                {clauses.map((clause) => (
-                  <ClauseCard 
-                    key={clause.id}
-                    clause={clause}
-                    onApprove={handleApproveClause}
-                    onUpdateRedline={handleUpdateRedline}
-                    onHighlightClause={(cl) => setActiveHighlight(cl)}
-                  />
-                ))}
+
+                {/* Clauses List */}
+                {filteredClauses.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#78716c' }}>
+                    <p style={{ fontWeight: 600 }}>No clauses match the selected filters.</p>
+                  </div>
+                ) : (
+                  filteredClauses.map((clause) => (
+                    <ClauseCard 
+                      key={clause.id}
+                      clause={clause}
+                      onApprove={handleApproveClause}
+                      onUpdateRedline={handleUpdateRedline}
+                      onHighlightClause={(c) => setActiveHighlight({ title: c.title, text: c.text })}
+                      isFocused={activeHighlight?.title === clause.title}
+                    />
+                  ))
+                )}
               </div>
             )}
 
+            {/* Tab 2: Risk Radar */}
+            {activeTab === 'summary' && (
+              <RiskRadar 
+                riskSummary={riskSummary}
+                riskProfile={selectedProfile}
+              />
+            )}
+
+            {/* Tab 3: Extracted Entities */}
+            {activeTab === 'entities' && (
+              <EntityList 
+                entities={entities}
+                onHighlightEntity={(ent) => setActiveHighlight({ title: ent.category, text: ent.text })}
+              />
+            )}
+
+            {/* Tab 4: Audit Trail */}
             {activeTab === 'audit' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <div style={{ fontSize: '0.775rem', color: '#64748b' }}>
-                  Immutable audit trail of actions taken on this contract.
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                <div style={{ fontSize: '0.75rem', color: '#78716c', marginBottom: '0.25rem' }}>
+                  Immutable event ledger for this agreement:
                 </div>
                 {auditLogs.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b', fontSize: '0.85rem' }}>
+                  <div style={{ textAlign: 'center', padding: '2rem', color: '#a8a29e' }}>
                     No audit records logged yet.
                   </div>
                 ) : (
                   auditLogs.map((log) => (
                     <div 
-                      key={log.id}
+                      key={log.id} 
                       style={{ 
-                        background: '#f8fafc', 
+                        background: '#ffffff', 
                         border: '1px solid var(--border-subtle)', 
-                        borderRadius: '6px', 
-                        padding: '0.65rem 0.75rem',
-                        fontSize: '0.775rem' 
+                        borderRadius: '8px', 
+                        padding: '0.65rem 0.85rem',
+                        fontSize: '0.75rem' 
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
-                        <span style={{ fontWeight: 700, color: '#0f172a' }}>{log.event_type}</span>
-                        <span style={{ color: '#94a3b8', fontSize: '0.675rem' }}>
-                          {new Date(log.timestamp).toLocaleTimeString()}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
+                        <strong style={{ color: '#1c1917' }}>{log.event_type}</strong>
+                        <span style={{ 
+                          fontSize: '0.65rem', 
+                          padding: '0.1rem 0.35rem', 
+                          borderRadius: '3px',
+                          background: log.severity === 'CRITICAL' ? '#fee2e2' : '#f3efe8',
+                          color: log.severity === 'CRITICAL' ? '#991b1b' : '#57534e',
+                          fontWeight: 700 
+                        }}>
+                          {log.severity}
                         </span>
                       </div>
-                      <div style={{ color: '#334155', marginBottom: '0.15rem' }}>{log.action}</div>
-                      <div style={{ color: '#64748b', fontSize: '0.675rem' }}>Actor: {log.actor}</div>
+                      <div style={{ color: '#44403c', marginBottom: '0.25rem' }}>{log.action}</div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#a8a29e', fontSize: '0.7rem' }}>
+                        <span>Actor: {log.actor}</span>
+                        <span>{new Date(log.timestamp).toLocaleTimeString()}</span>
+                      </div>
                     </div>
                   ))
                 )}
@@ -345,6 +504,21 @@ export default function Reviewer({
           </div>
         </div>
       </div>
+
+      {/* Sign-Off & Attestation Modal */}
+      <SignOffModal 
+        isOpen={isSignOffModalOpen}
+        onClose={() => setIsSignOffModalOpen(false)}
+        contractTitle={contractData?.title}
+        riskScore={riskSummary?.overall_score || 0}
+        riskLevel={riskSummary?.overall_level || 'LOW'}
+        approvedCount={approvedCount}
+        totalCount={totalCount}
+        onConfirmSignOff={handleFinalizeReview}
+        onExportPdf={handleExportPdf}
+        onExportJson={handleExportJson}
+        currentUser={currentUser}
+      />
     </div>
   );
 }

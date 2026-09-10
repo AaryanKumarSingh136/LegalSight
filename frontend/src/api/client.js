@@ -5,7 +5,7 @@
 const API_BASE = '/api';
 
 export const getAuthToken = () => localStorage.getItem('legalsight_token');
-export const setAuthToken = (token) => localStorage.getItem('legalsight_token', token);
+export const setAuthToken = (token) => localStorage.setItem('legalsight_token', token);
 export const removeAuthToken = () => localStorage.removeItem('legalsight_token');
 
 export const getSavedUser = () => {

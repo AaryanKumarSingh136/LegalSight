@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
   FileText, Search, Cpu, ShieldAlert, Users, 
-  History, LogIn, LogOut, Sparkles, Scale
+  History, LogIn, LogOut, Sparkles, Scale, BookOpen, ChevronRight
 } from 'lucide-react';
 
 export default function Header({ 
@@ -16,14 +16,14 @@ export default function Header({
     <header className="navbar">
       <div className="brand" onClick={() => setActiveTab('dashboard')}>
         <div className="brand-icon">
-          <Scale size={18} />
+          <Scale size={20} />
         </div>
         <div>
-          <span>LegalSight</span>
-          <span style={{ fontSize: '0.65rem', fontWeight: 600, marginLeft: '6px', color: '#64748b' }}>
-            MVP
-          </span>
+          <div className="brand-title">
+            LegalSight
+          </div>
         </div>
+        <span className="brand-badge">AI RISK ENGINE</span>
       </div>
 
       <nav className="nav-links">
@@ -42,7 +42,7 @@ export default function Header({
           <Sparkles size={15} />
           <span>Reviewer</span>
           {currentContractTitle && (
-            <span className="nav-badge" title={currentContractTitle}>
+            <span className="nav-badge active-indicator" title={currentContractTitle}>
               Active
             </span>
           )}
@@ -53,8 +53,7 @@ export default function Header({
           onClick={() => setActiveTab('search')}
         >
           <Search size={15} />
-          <span>Search</span>
-          <span className="nav-badge">Stub</span>
+          <span>Semantic Search</span>
         </button>
 
         <button 
@@ -63,7 +62,6 @@ export default function Header({
         >
           <Cpu size={15} />
           <span>Smart Contracts</span>
-          <span className="nav-badge">Stub</span>
         </button>
 
         <button 
@@ -71,7 +69,7 @@ export default function Header({
           onClick={() => setActiveTab('admin')}
         >
           <Users size={15} />
-          <span>Admin</span>
+          <span>Governance</span>
         </button>
 
         <button 
@@ -79,15 +77,15 @@ export default function Header({
           onClick={() => setActiveTab('audit')}
         >
           <History size={15} />
-          <span>Audit Logs</span>
+          <span>Audit Ledger</span>
         </button>
       </nav>
 
       <div className="user-controls">
         {currentUser ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
             <div className="user-badge">
-              <span style={{ fontWeight: 600 }}>{currentUser.username}</span>
+              <span style={{ fontWeight: 700, color: '#1c1917' }}>{currentUser.username}</span>
               <span className={`role-tag ${currentUser.role === 'Admin' ? 'admin' : ''}`}>
                 {currentUser.role}
               </span>
@@ -98,13 +96,13 @@ export default function Header({
               title="Sign out"
             >
               <LogOut size={13} />
-              <span>Logout</span>
+              <span>Sign Out</span>
             </button>
           </div>
         ) : (
           <button className="btn btn-primary btn-sm" onClick={onOpenAuth}>
             <LogIn size={13} />
-            <span>Sign In / Demo</span>
+            <span>Sign In / 1-Click Demo</span>
           </button>
         )}
       </div>

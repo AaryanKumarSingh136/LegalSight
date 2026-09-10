@@ -130,8 +130,14 @@ async def load_sample_contract(
     """
     Load a pre-configured realistic contract sample for immediate analysis.
     """
+    # Resolve sample_key variants
     if sample_key not in SAMPLE_CONTRACTS:
-        raise HTTPException(status_code=404, detail="Sample contract not found.")
+        if f"sample_{sample_key}" in SAMPLE_CONTRACTS:
+            sample_key = f"sample_{sample_key}"
+        elif sample_key.replace("sample_", "") in SAMPLE_CONTRACTS:
+            sample_key = sample_key.replace("sample_", "")
+        else:
+            raise HTTPException(status_code=404, detail=f"Sample contract '{sample_key}' not found.")
 
     owner_id = current_user.user_id if current_user else None
     job_id = await orchestrator.initialize_from_sample(sample_key, risk_profile, owner_id=owner_id)
@@ -156,7 +162,7 @@ async def load_sample_contract(
     }
 
 @router.get("/{contract_id}")
-def get_contract_details(
+async def get_contract_details(
     contract_id: str,
     current_user: Optional[User] = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -189,7 +195,26 @@ def get_contract_details(
     # Query DB
     db_contract = db.query(Contract).filter(Contract.contract_id == contract_id).first()
     if not db_contract:
-        raise HTTPException(status_code=404, detail="Contract not found.")
+        # Check if contract_id is a sample key or sample alias
+        matched_sample = None
+        for sk in SAMPLE_CONTRACTS.keys():
+            if sk == contract_id or sk in contract_id or contract_id.replace("sample_", "").replace("cnt_", "") in sk:
+                matched_sample = sk
+                break
+        
+        if matched_sample:
+            job_id = await orchestrator.initialize_from_sample(matched_sample, RiskProfileType.VENDOR_STANDARD)
+            job = orchestrator.jobs[job_id]
+            meta = orchestrator.contracts[job.contract_id]
+            raw_text = orchestrator.raw_texts.get(job.contract_id, "")
+            return {
+                "metadata": meta.model_dump(),
+                "raw_text": raw_text,
+                "job_id": job_id,
+                "analysis": job.model_dump()
+            }
+
+        raise HTTPException(status_code=404, detail=f"Contract '{contract_id}' not found.")
 
     return {
         "metadata": {

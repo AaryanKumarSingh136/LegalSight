@@ -1,96 +1,146 @@
 import React from 'react';
-import { AlertOctagon, CheckCircle2, ShieldAlert, Sparkles, TrendingUp } from 'lucide-react';
+import { ShieldAlert, Sparkles, TrendingUp, AlertTriangle, CheckCircle, Award, Scale } from 'lucide-react';
 
 export default function RiskRadar({ riskSummary, riskProfile }) {
   if (!riskSummary) {
     return (
-      <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
-        No risk summary available for this contract.
+      <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#78716c' }}>
+        <Scale size={28} style={{ margin: '0 auto 0.75rem', opacity: 0.4 }} />
+        <p style={{ fontSize: '0.875rem', fontWeight: 600 }}>No risk score computed yet.</p>
+        <p style={{ fontSize: '0.775rem', color: '#a8a29e' }}>Select a risk playbook to calculate liability score.</p>
       </div>
     );
   }
 
-  const { overall_score, overall_level, category_scores, flagged_clauses_count, executive_summary, top_recommendations } = riskSummary;
+  const { overall_score = 0, overall_level = 'LOW', category_scores = {}, flagged_clauses_count = {}, executive_summary = '', top_recommendations = [] } = riskSummary;
+
+  // SVG Gauge calculations
+  const radius = 42;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (overall_score / 100) * circumference;
+
+  const getScoreColor = (score) => {
+    if (score >= 75) return '#dc2626'; // Red
+    if (score >= 45) return '#ea580c'; // Orange
+    if (score >= 20) return '#d97706'; // Amber
+    return '#16a34a'; // Emerald
+  };
+
+  const scoreColor = getScoreColor(overall_score);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-      {/* Score Gauge & Summary Header */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      {/* Score Gauge & Summary Hero Card */}
       <div className="risk-meter-container">
-        <div className={`score-circle ${overall_level}`}>
-          <div>{overall_score}</div>
-          <div className="score-label">/ 100 Risk</div>
+        <div className="score-circle-svg-wrapper">
+          <svg width="110" height="110" viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)' }}>
+            {/* Background Track */}
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="transparent"
+              stroke="#e8e2d8"
+              strokeWidth="8"
+            />
+            {/* Animated Score Progress */}
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="transparent"
+              stroke={scoreColor}
+              strokeWidth="8"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              strokeLinecap="round"
+              style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.4s ease' }}
+            />
+          </svg>
+          <div className="score-circle-center-text">
+            <div className="score-number" style={{ color: scoreColor }}>{overall_score}</div>
+            <div className="score-label">/100 RISK</div>
+          </div>
         </div>
 
         <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.45rem', flexWrap: 'wrap' }}>
             <span className={`badge-risk ${overall_level}`}>
               {overall_level} EXPOSURE
             </span>
-            <span style={{ fontSize: '0.775rem', color: '#64748b' }}>
-              Profile: <b>{riskProfile}</b>
+            <span style={{ fontSize: '0.75rem', color: '#78716c' }}>
+              Playbook: <strong style={{ color: '#1c1917' }}>{riskProfile}</strong>
             </span>
           </div>
-          <p style={{ fontSize: '0.825rem', color: '#334155', lineHeight: 1.5 }}>
+          <p style={{ fontSize: '0.825rem', color: '#44403c', lineHeight: 1.55 }}>
             {executive_summary}
           </p>
         </div>
       </div>
 
-      {/* Flagged Risk Counts */}
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(4, 1fr)', 
-        gap: '0.65rem', 
-        textAlign: 'center' 
-      }}>
-        <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', padding: '0.5rem' }}>
-          <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#991b1b' }}>
-            {flagged_clauses_count?.CRITICAL || 0}
-          </div>
-          <div style={{ fontSize: '0.675rem', color: '#991b1b', fontWeight: 700 }}>CRITICAL</div>
+      {/* Flagged Risk Distribution Tier Cards */}
+      <div>
+        <div style={{ fontSize: '0.725rem', fontWeight: 700, color: '#78716c', textTransform: 'uppercase', marginBottom: '0.45rem' }}>
+          Identified Risk Distribution
         </div>
-
-        <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '8px', padding: '0.5rem' }}>
-          <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#9a3412' }}>
-            {flagged_clauses_count?.HIGH || 0}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.65rem', textAlign: 'center' }}>
+          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '10px', padding: '0.65rem 0.35rem' }}>
+            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#991b1b', lineHeight: 1.1 }}>
+              {flagged_clauses_count?.CRITICAL || 0}
+            </div>
+            <div style={{ fontSize: '0.65rem', color: '#991b1b', fontWeight: 800, letterSpacing: '0.04em' }}>CRITICAL</div>
           </div>
-          <div style={{ fontSize: '0.675rem', color: '#9a3412', fontWeight: 700 }}>HIGH</div>
-        </div>
 
-        <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '0.5rem' }}>
-          <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#92400e' }}>
-            {flagged_clauses_count?.MEDIUM || 0}
+          <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '10px', padding: '0.65rem 0.35rem' }}>
+            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#9a3412', lineHeight: 1.1 }}>
+              {flagged_clauses_count?.HIGH || 0}
+            </div>
+            <div style={{ fontSize: '0.65rem', color: '#9a3412', fontWeight: 800, letterSpacing: '0.04em' }}>HIGH</div>
           </div>
-          <div style={{ fontSize: '0.675rem', color: '#92400e', fontWeight: 700 }}>MEDIUM</div>
-        </div>
 
-        <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '8px', padding: '0.5rem' }}>
-          <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#065f46' }}>
-            {flagged_clauses_count?.LOW || 0}
+          <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '10px', padding: '0.65rem 0.35rem' }}>
+            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#92400e', lineHeight: 1.1 }}>
+              {flagged_clauses_count?.MEDIUM || 0}
+            </div>
+            <div style={{ fontSize: '0.65rem', color: '#92400e', fontWeight: 800, letterSpacing: '0.04em' }}>MEDIUM</div>
           </div>
-          <div style={{ fontSize: '0.675rem', color: '#065f46', fontWeight: 700 }}>LOW</div>
+
+          <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '10px', padding: '0.65rem 0.35rem' }}>
+            <div style={{ fontSize: '1.35rem', fontWeight: 800, color: '#065f46', lineHeight: 1.1 }}>
+              {flagged_clauses_count?.LOW || 0}
+            </div>
+            <div style={{ fontSize: '0.65rem', color: '#065f46', fontWeight: 800, letterSpacing: '0.04em' }}>LOW</div>
+          </div>
         </div>
       </div>
 
       {/* Category Risk Breakdown */}
       {category_scores && Object.keys(category_scores).length > 0 && (
-        <div style={{ background: '#f8fafc', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.85rem' }}>
-          <div style={{ fontSize: '0.825rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.65rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <TrendingUp size={14} color="#475569" />
+        <div style={{ background: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
+          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1c1917', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+            <TrendingUp size={15} color="#c29037" />
             <span>Category Risk Exposure Breakdown</span>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
             {Object.entries(category_scores).map(([category, score]) => {
-              const color = score >= 70 ? '#ef4444' : score >= 40 ? '#f59e0b' : '#10b981';
+              const color = score >= 70 ? '#dc2626' : score >= 40 ? '#d97706' : '#16a34a';
               return (
                 <div key={category}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '0.15rem' }}>
-                    <span style={{ color: '#334155' }}>{category}</span>
-                    <span style={{ fontWeight: 700, color }}>{score}/100</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '0.25rem' }}>
+                    <span style={{ color: '#44403c', fontWeight: 500 }}>{category}</span>
+                    <span style={{ fontWeight: 700, color, fontFamily: 'var(--font-mono)' }}>{score}/100</span>
                   </div>
-                  <div style={{ width: '100%', height: '5px', background: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
-                    <div style={{ width: `${score}%`, height: '100%', background: color, borderRadius: '3px' }} />
+                  <div style={{ width: '100%', height: '6px', background: '#f3efe8', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div 
+                      style={{ 
+                        width: `${Math.min(100, Math.max(5, score))}%`, 
+                        height: '100%', 
+                        background: color, 
+                        borderRadius: '4px',
+                        transition: 'width 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
+                      }} 
+                    />
                   </div>
                 </div>
               );
@@ -99,18 +149,21 @@ export default function RiskRadar({ riskSummary, riskProfile }) {
         </div>
       )}
 
-      {/* Top Strategic Recommendations */}
+      {/* Top Strategic Counsel Recommendations */}
       {top_recommendations && top_recommendations.length > 0 && (
-        <div style={{ background: '#f8fafc', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.85rem' }}>
-          <div style={{ fontSize: '0.825rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <Sparkles size={14} color="#64748b" />
-            <span>Counsel Recommendations</span>
+        <div style={{ background: '#fdfbf7', border: '1px solid #ebd8b7', borderRadius: '12px', padding: '1rem' }}>
+          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#78350f', marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+            <Sparkles size={15} color="#c29037" />
+            <span>Key Strategic Counsel Directives</span>
           </div>
-          <ul style={{ paddingLeft: '1.1rem', fontSize: '0.775rem', color: '#334155', lineHeight: 1.55 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
             {top_recommendations.map((rec, i) => (
-              <li key={i} style={{ marginBottom: '0.3rem' }}>{rec}</li>
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', fontSize: '0.775rem', color: '#44403c', lineHeight: 1.5 }}>
+                <span style={{ color: '#c29037', fontWeight: 700 }}>•</span>
+                <span>{rec}</span>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
     </div>

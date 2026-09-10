@@ -1,22 +1,26 @@
 import React from 'react';
-import { Users, Calendar, DollarSign, Scale, Landmark, Tag } from 'lucide-react';
+import { Users, Calendar, DollarSign, Scale, Landmark, Tag, Copy, Check, Eye } from 'lucide-react';
+import { useToast } from './Toast';
 
 export default function EntityList({ entities, onHighlightEntity }) {
+  const { addToast } = useToast();
+
   if (!entities || entities.length === 0) {
     return (
-      <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
-        No entities extracted yet.
+      <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#78716c' }}>
+        <Tag size={28} style={{ margin: '0 auto 0.75rem', opacity: 0.4 }} />
+        <p style={{ fontWeight: 600 }}>No named legal entities extracted yet.</p>
       </div>
     );
   }
 
   // Group entities by category
   const groups = {
-    PARTY: { label: 'Parties & Corporate Entities', icon: <Users size={15} color="#475569" /> },
-    EFFECTIVE_DATE: { label: 'Effective & Key Dates', icon: <Calendar size={15} color="#475569" /> },
-    MONETARY_VALUE: { label: 'Monetary Commitments & Caps', icon: <DollarSign size={15} color="#475569" /> },
-    GOVERNING_LAW: { label: 'Governing Law & Jurisdiction', icon: <Scale size={15} color="#475569" /> },
-    DISPUTE_VENUE: { label: 'Dispute Venues & Arbitration', icon: <Landmark size={15} color="#475569" /> }
+    PARTY: { label: 'Parties & Corporate Signatories', icon: <Users size={15} color="#1c1917" />, bg: '#fdfbf7', border: '#e8dec8' },
+    EFFECTIVE_DATE: { label: 'Execution & Effective Dates', icon: <Calendar size={15} color="#854d0e" />, bg: '#fef8eb', border: '#fde68a' },
+    MONETARY_VALUE: { label: 'Financial Commitments & Super-Caps', icon: <DollarSign size={15} color="#15803d" />, bg: '#edf8f0', border: '#bbf7d0' },
+    GOVERNING_LAW: { label: 'Governing Law & Legal Jurisdiction', icon: <Scale size={15} color="#1c1917" />, bg: '#fdfbf7', border: '#e8dec8' },
+    DISPUTE_VENUE: { label: 'Arbitration Tribunals & Courts', icon: <Landmark size={15} color="#9a3412" />, bg: '#fff7ed', border: '#fed7aa' }
   };
 
   const grouped = {};
@@ -26,10 +30,16 @@ export default function EntityList({ entities, onHighlightEntity }) {
     grouped[cat].push(ent);
   });
 
+  const handleCopy = (e, text) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(text);
+    addToast(`Copied '${text}' to clipboard`, 'success', 2000);
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-      <div style={{ fontSize: '0.775rem', color: '#64748b' }}>
-        Click any entity chip to jump and highlight it in the source contract.
+      <div style={{ fontSize: '0.775rem', color: '#78716c', background: '#faf8f4', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.5rem 0.75rem' }}>
+        💡 Click any entity tag to locate and highlight it in the source agreement text.
       </div>
 
       {Object.entries(groups).map(([catKey, config]) => {
@@ -40,41 +50,60 @@ export default function EntityList({ entities, onHighlightEntity }) {
           <div 
             key={catKey}
             style={{ 
-              background: '#f8fafc', 
-              border: '1px solid var(--border-subtle)', 
-              borderRadius: '8px', 
-              padding: '0.75rem' 
+              background: config.bg, 
+              border: `1px solid ${config.border}`, 
+              borderRadius: '10px', 
+              padding: '0.85rem' 
             }}
           >
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
-              gap: '0.4rem', 
+              gap: '0.45rem', 
               fontWeight: 700, 
-              fontSize: '0.8rem', 
-              color: '#0f172a',
-              marginBottom: '0.5rem' 
+              fontSize: '0.825rem', 
+              color: '#1c1917',
+              marginBottom: '0.65rem' 
             }}>
               {config.icon}
               <span>{config.label}</span>
-              <span style={{ fontSize: '0.675rem', color: '#94a3b8' }}>({items.length})</span>
+              <span style={{ fontSize: '0.7rem', color: '#78716c', fontFamily: 'var(--font-mono)' }}>({items.length})</span>
             </div>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
               {items.map((ent, idx) => (
-                <button
+                <div
                   key={idx}
-                  className="entity-tag"
                   onClick={() => onHighlightEntity(ent)}
-                  style={{ cursor: 'pointer' }}
-                  title="Click to highlight in document"
+                  style={{
+                    background: '#ffffff',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: '6px',
+                    padding: '0.3rem 0.6rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    fontSize: '0.775rem',
+                    color: '#1c1917',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    boxShadow: 'var(--shadow-sm)',
+                    transition: 'all 0.15s ease'
+                  }}
+                  title="Click to locate in contract"
                 >
-                  <Tag size={11} color="#64748b" />
                   <span>{ent.text}</span>
-                  <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>
-                    {(ent.confidence * 100).toFixed(0)}%
+                  <span style={{ fontSize: '0.65rem', color: '#78716c', background: '#f4f0e8', padding: '0.05rem 0.3rem', borderRadius: '3px', fontFamily: 'var(--font-mono)' }}>
+                    {Math.round((ent.confidence || 0.95) * 100)}%
                   </span>
-                </button>
+                  <button
+                    onClick={(e) => handleCopy(e, ent.text)}
+                    style={{ background: 'transparent', border: 'none', color: '#a8a29e', cursor: 'pointer', padding: '0 2px', display: 'flex', alignItems: 'center' }}
+                    title="Copy text"
+                  >
+                    <Copy size={11} />
+                  </button>
+                </div>
               ))}
             </div>
           </div>

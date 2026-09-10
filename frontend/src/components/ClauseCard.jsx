@@ -1,75 +1,102 @@
 import React, { useState } from 'react';
 import { 
   CheckCircle2, AlertTriangle, ShieldAlert, Edit3, 
-  ChevronDown, ChevronUp, Sparkles, Check, Bookmark
+  ChevronDown, ChevronUp, Sparkles, Check, Bookmark, 
+  RotateCcw, MessageSquare, Eye, Scale, ArrowRight
 } from 'lucide-react';
+import DiffViewer from './DiffViewer';
+import { useToast } from './Toast';
 
 export default function ClauseCard({ 
   clause, 
   onApprove, 
   onUpdateRedline, 
-  onHighlightClause 
+  onHighlightClause,
+  isFocused = false
 }) {
   const [expanded, setExpanded] = useState(false);
   const [isEditingRedline, setIsEditingRedline] = useState(false);
-  const [customReplacement, setCustomReplacement] = useState(
-    clause.redline ? clause.redline.suggested_replacement : ''
-  );
+  const [showRationale, setShowRationale] = useState(false);
+  const [showCounselNotes, setShowCounselNotes] = useState(false);
+  const [counselNote, setCounselNote] = useState('');
+  const { addToast } = useToast();
+
+  const originalReplacement = clause.redline ? clause.redline.suggested_replacement : '';
+  const [customReplacement, setCustomReplacement] = useState(originalReplacement);
   const [customRationale, setCustomRationale] = useState(
     clause.redline ? clause.redline.rationale : ''
   );
 
+  const handleApproveToggle = () => {
+    onApprove(clause.id);
+    if (!clause.user_approved) {
+      addToast(`Approved: ${clause.title}`, 'success', 2500);
+    } else {
+      addToast(`Reopened for review: ${clause.title}`, 'info', 2000);
+    }
+  };
+
   const handleSaveCustomRedline = () => {
     onUpdateRedline(clause.id, customReplacement, customRationale);
     setIsEditingRedline(false);
+    addToast(`Saved custom redline for ${clause.title}`, 'success', 2500);
+  };
+
+  const handleResetRedline = () => {
+    setCustomReplacement(originalReplacement);
+    onUpdateRedline(clause.id, originalReplacement, clause.redline?.rationale || '');
+    setIsEditingRedline(false);
+    addToast('Reverted to AI suggested redline', 'info', 2000);
   };
 
   const hasRedline = clause.redline && clause.redline.action_type === 'REPLACE';
+  const effectiveReplacement = customReplacement || (clause.redline && clause.redline.suggested_replacement);
 
   return (
-    <div className={`clause-card ${clause.user_approved ? 'approved' : ''}`}>
+    <div className={`clause-card ${clause.user_approved ? 'approved' : ''} ${isFocused ? 'focused' : ''}`}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.65rem', gap: '0.5rem' }}>
         <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-            <span style={{ fontWeight: 700, fontSize: '0.875rem', color: '#0f172a' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
+            <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1c1917', fontFamily: 'var(--font-main)' }}>
               {clause.title}
             </span>
             <span className={`badge-risk ${clause.risk_level}`}>
               {clause.risk_level} ({clause.risk_score})
             </span>
             <span style={{ 
-              background: '#f1f5f9', 
-              color: '#475569', 
+              background: '#f4f0e8', 
+              color: '#57534e', 
               fontSize: '0.7rem', 
-              padding: '0.1rem 0.4rem', 
+              padding: '0.12rem 0.5rem', 
               borderRadius: '4px',
-              fontWeight: 500
+              fontWeight: 600
             }}>
               {clause.category}
             </span>
           </div>
         </div>
 
+        {/* Approve / Status Button */}
         <button 
           className={`btn btn-sm ${clause.user_approved ? 'btn-success' : 'btn-secondary'}`}
-          onClick={() => onApprove(clause.id)}
-          style={{ fontSize: '0.725rem', padding: '0.25rem 0.55rem' }}
+          onClick={handleApproveToggle}
+          style={{ fontSize: '0.75rem', padding: '0.3rem 0.65rem', flexShrink: 0 }}
         >
           {clause.user_approved ? (
             <>
-              <Check size={12} />
+              <Check size={13} />
               <span>Approved</span>
             </>
           ) : (
-            <span>Approve</span>
+            <span>Approve Clause</span>
           )}
         </button>
       </div>
 
-      {/* Red Flag Indicators */}
+      {/* Red Flag Phrases */}
       {clause.red_flag_phrases && clause.red_flag_phrases.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginBottom: '0.5rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '0.65rem' }}>
           {clause.red_flag_phrases.map((flag, idx) => (
             <span 
               key={idx}
@@ -78,12 +105,12 @@ export default function ClauseCard({
                 border: '1px solid #fecaca', 
                 color: '#991b1b', 
                 fontSize: '0.7rem', 
-                padding: '0.1rem 0.45rem', 
+                padding: '0.15rem 0.5rem', 
                 borderRadius: '4px',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.25rem',
-                fontWeight: 600
+                gap: '0.3rem',
+                fontWeight: 700
               }}
             >
               <AlertTriangle size={11} />
@@ -93,114 +120,206 @@ export default function ClauseCard({
         </div>
       )}
 
-      {/* Clause Text Snippet */}
+      {/* Clause Text Snippet with Interactive Jump */}
       <div 
         style={{ 
           fontSize: '0.8rem', 
           color: '#334155', 
-          lineHeight: 1.5, 
+          lineHeight: 1.55, 
           cursor: 'pointer',
-          background: '#f8fafc',
+          background: '#fbf9f5',
           border: '1px solid var(--border-subtle)',
-          padding: '0.5rem 0.65rem',
-          borderRadius: '6px',
-          marginBottom: '0.5rem'
+          padding: '0.65rem 0.85rem',
+          borderRadius: '8px',
+          marginBottom: '0.65rem',
+          transition: 'all 0.15s ease'
         }}
         onClick={() => onHighlightClause(clause)}
-        title="Click to highlight in source document"
+        title="Click to locate and focus in source contract"
       >
-        {expanded ? clause.text : (clause.text.slice(0, 180) + (clause.text.length > 180 ? '...' : ''))}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
+          <span style={{ fontSize: '0.675rem', fontWeight: 700, color: '#948b81', textTransform: 'uppercase' }}>
+            Source Provision Text (Lines ~{clause.start_idx ? Math.floor(clause.start_idx / 80) : 1})
+          </span>
+          <span style={{ fontSize: '0.675rem', color: '#c29037', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '2px' }}>
+            <Eye size={11} /> Jump to doc
+          </span>
+        </div>
+        <p style={{ margin: 0 }}>
+          {expanded ? clause.text : (clause.text.slice(0, 220) + (clause.text.length > 220 ? '...' : ''))}
+        </p>
+        {clause.text.length > 220 && (
+          <button
+            onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
+            style={{ 
+              background: 'transparent', 
+              border: 'none', 
+              color: '#854d0e', 
+              fontSize: '0.725rem', 
+              fontWeight: 700, 
+              cursor: 'pointer', 
+              marginTop: '0.3rem',
+              padding: 0 
+            }}
+          >
+            {expanded ? '▲ Collapse provision' : '▼ Read full provision'}
+          </button>
+        )}
       </div>
 
-      {/* Mitigation Note */}
+      {/* Mitigation / Strategic Recommendation */}
       {clause.mitigation_recommendation && (
         <div style={{ 
           fontSize: '0.75rem', 
-          color: clause.risk_level === 'CRITICAL' || clause.risk_level === 'HIGH' ? '#9a3412' : '#64748b',
-          marginBottom: '0.45rem',
+          color: clause.risk_level === 'CRITICAL' || clause.risk_level === 'HIGH' ? '#9a3412' : '#57534e',
+          background: clause.risk_level === 'CRITICAL' || clause.risk_level === 'HIGH' ? '#fff7ed' : '#faf8f4',
+          border: '1px solid ' + (clause.risk_level === 'CRITICAL' || clause.risk_level === 'HIGH' ? '#fed7aa' : 'var(--border-subtle)'),
+          borderRadius: '6px',
+          padding: '0.45rem 0.65rem',
+          marginBottom: '0.65rem',
           display: 'flex',
           alignItems: 'flex-start',
-          gap: '0.35rem'
+          gap: '0.45rem'
         }}>
-          <Sparkles size={13} style={{ flexShrink: 0, marginTop: '2px', color: '#64748b' }} />
-          <span>{clause.mitigation_recommendation}</span>
+          <Sparkles size={14} style={{ flexShrink: 0, marginTop: '1px', color: '#c29037' }} />
+          <span><strong>Risk Mitigation:</strong> {clause.mitigation_recommendation}</span>
         </div>
       )}
 
-      {/* Suggested Redline Box */}
+      {/* Side-by-Side Harmonized Redline Diff Section */}
       {hasRedline && (
-        <div className="redline-box">
+        <div style={{ marginTop: '0.5rem', background: '#ffffff', borderRadius: '8px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-            <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#166534', textTransform: 'uppercase' }}>
-              ✦ Proposed Harmonized Redline:
+            <span style={{ fontSize: '0.725rem', fontWeight: 700, color: '#15803d', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <Scale size={13} />
+              <span>Harmonized Market Redline Comparison</span>
             </span>
-            <button 
-              onClick={() => setIsEditingRedline(!isEditingRedline)}
-              style={{ background: 'transparent', border: 'none', color: '#475569', fontSize: '0.675rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px', fontWeight: 600 }}
-            >
-              <Edit3 size={11} />
-              <span>{isEditingRedline ? 'Cancel' : 'Edit Redline'}</span>
-            </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <button 
+                onClick={() => setShowRationale(!showRationale)}
+                style={{ background: 'transparent', border: 'none', color: '#78716c', fontSize: '0.7rem', cursor: 'pointer', fontWeight: 600 }}
+              >
+                {showRationale ? 'Hide Rationale' : 'Why this change?'}
+              </button>
+              <button 
+                onClick={() => setIsEditingRedline(!isEditingRedline)}
+                style={{ 
+                  background: isEditingRedline ? '#fee2e2' : '#f4f0e8', 
+                  border: '1px solid var(--border-subtle)', 
+                  color: isEditingRedline ? '#991b1b' : '#44403c', 
+                  fontSize: '0.7rem', 
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '4px',
+                  cursor: 'pointer', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '3px', 
+                  fontWeight: 600 
+                }}
+              >
+                <Edit3 size={11} />
+                <span>{isEditingRedline ? 'Cancel' : 'Edit Redline'}</span>
+              </button>
+            </div>
           </div>
 
-          {isEditingRedline ? (
-            <div style={{ marginTop: '0.4rem' }}>
+          {/* Side-by-Side Word Diff Viewer */}
+          {!isEditingRedline && effectiveReplacement && (
+            <DiffViewer originalText={clause.text} replacementText={effectiveReplacement} />
+          )}
+
+          {/* Edit Custom Redline Form */}
+          {isEditingRedline && (
+            <div style={{ marginTop: '0.5rem', background: '#faf8f4', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.75rem' }}>
+              <label className="form-label" style={{ fontSize: '0.725rem' }}>
+                Custom Harmonized Replacement Text:
+              </label>
               <textarea 
                 className="form-input" 
                 rows={4}
                 value={customReplacement}
                 onChange={(e) => setCustomReplacement(e.target.value)}
-                style={{ fontSize: '0.775rem', fontFamily: 'var(--font-mono)' }}
+                style={{ fontSize: '0.775rem', marginBottom: '0.5rem' }}
               />
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.4rem', marginTop: '0.35rem' }}>
-                <button className="btn btn-primary btn-sm" onClick={handleSaveCustomRedline}>
-                  Save & Apply
+              <label className="form-label" style={{ fontSize: '0.725rem' }}>
+                Custom Legal Rationale:
+              </label>
+              <input 
+                type="text"
+                className="form-input"
+                value={customRationale}
+                onChange={(e) => setCustomRationale(e.target.value)}
+                style={{ fontSize: '0.75rem', marginBottom: '0.75rem' }}
+                placeholder="Explain why this clause was modified..."
+              />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                <button 
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleResetRedline}
+                  title="Revert to original AI generated redline"
+                >
+                  <RotateCcw size={11} />
+                  <span>Reset to AI Default</span>
+                </button>
+                <button 
+                  className="btn btn-primary btn-sm"
+                  onClick={handleSaveCustomRedline}
+                >
+                  <Check size={11} />
+                  <span>Save & Apply Redline</span>
                 </button>
               </div>
             </div>
-          ) : (
-            <>
-              <div className="diff-del">
-                - {clause.redline.original_text.slice(0, 140)}...
-              </div>
-              <div className="diff-add">
-                + {clause.redline.suggested_replacement}
-              </div>
-              <div style={{ fontSize: '0.675rem', color: '#64748b', marginTop: '0.35rem', fontStyle: 'italic' }}>
-                Rationale: {clause.redline.rationale}
-              </div>
-            </>
+          )}
+
+          {/* Legal Rationale Drawer */}
+          {showRationale && clause.redline?.rationale && (
+            <div style={{ 
+              marginTop: '0.5rem', 
+              background: '#fdfbf7', 
+              border: '1px solid #e8dec8', 
+              borderRadius: '6px', 
+              padding: '0.65rem 0.85rem',
+              fontSize: '0.75rem',
+              color: '#57534e',
+              lineHeight: 1.5
+            }}>
+              <strong style={{ color: '#854d0e' }}>Legal & Commercial Precedent Rationale:</strong>
+              <p style={{ marginTop: '0.2rem', marginBottom: 0 }}>{clause.redline.rationale}</p>
+            </div>
           )}
         </div>
       )}
 
-      {/* Expand / Jump buttons */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.45rem' }}>
-        <button 
-          onClick={() => setExpanded(!expanded)}
-          style={{ background: 'transparent', border: 'none', color: '#64748b', fontSize: '0.725rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}
+      {/* Counsel Notes Drawer Toggle */}
+      <div style={{ marginTop: '0.65rem', borderTop: '1px solid #f3efe8', paddingTop: '0.45rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <button
+          onClick={() => setShowCounselNotes(!showCounselNotes)}
+          style={{ background: 'transparent', border: 'none', color: '#78716c', fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontWeight: 600 }}
         >
-          {expanded ? (
-            <>
-              <ChevronUp size={12} />
-              <span>Show Less</span>
-            </>
-          ) : (
-            <>
-              <ChevronDown size={12} />
-              <span>Show Full Clause</span>
-            </>
-          )}
+          <MessageSquare size={12} />
+          <span>{counselNote ? '1 Counsel Annotation' : 'Add Internal Note'}</span>
         </button>
-
-        <button 
-          onClick={() => onHighlightClause(clause)}
-          style={{ background: 'transparent', border: 'none', color: '#334155', fontSize: '0.725rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 600 }}
-        >
-          <Bookmark size={11} />
-          <span>Jump in Doc</span>
-        </button>
+        {clause.user_approved && (
+          <span style={{ fontSize: '0.675rem', color: '#15803d', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px' }}>
+            <CheckCircle2 size={12} /> Ready for Execution
+          </span>
+        )}
       </div>
+
+      {showCounselNotes && (
+        <div style={{ marginTop: '0.45rem' }}>
+          <textarea
+            className="form-input"
+            rows={2}
+            placeholder="Add internal counsel notes (e.g. Discuss super-cap with CFO before signing)..."
+            value={counselNote}
+            onChange={(e) => setCounselNote(e.target.value)}
+            style={{ fontSize: '0.75rem' }}
+          />
+        </div>
+      )}
     </div>
   );
 }
