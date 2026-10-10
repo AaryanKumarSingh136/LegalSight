@@ -147,5 +147,82 @@ Confidential Information includes all proprietary patent disclosures, raw sequen
 5. GOVERNING LAW
 Governing law shall be Delaware. The Court of Chancery of Delaware shall possess exclusive jurisdiction.
 """
+    },
+    "sample_ip_license": {
+        "id": "contract_ip_patent_license",
+        "title": "Patent Cross-License & Technology Commercialization Agreement",
+        "category": "Intellectual Property & Technology Transfer",
+        "filename": "QuantumCore_IP_Cross_License_2026.docx",
+        "parties": ["QuantumCore Systems Inc. (Licensor)", "Vertex Semiconductor Global Corp. (Licensee)"],
+        "effective_date": "2026-04-10",
+        "governing_law": "State of California, USA",
+        "monetary_value": "$5,200,000 USD (Royalty Advance)",
+        "text": """PATENT CROSS-LICENSE AND COMMERCIALIZATION AGREEMENT
+
+This Patent Cross-License and Technology Commercialization Agreement ("Agreement") is made effective as of April 10, 2026 by and between QuantumCore Systems Inc., a California corporation ("Licensor"), and Vertex Semiconductor Global Corp., a Delaware corporation ("Licensee").
+
+1. GRANT OF LICENSE & RESTRICTIONS
+1.1 Grant: Licensor hereby grants to Licensee an exclusive, worldwide, royalty-bearing license under the Licensed Patents to make, have made, use, sell, and import Licensed Products in the Field of Use.
+1.2 Reservation of Rights: Licensor reserves the right to practice the Licensed Patents for academic research and internal prototype development.
+1.3 Grant-Back Covenant: Licensee covenants that it shall grant back to Licensor a non-exclusive, worldwide, fully paid-up license to all severable improvements developed by Licensee.
+
+2. ROYALTIES, MINIMUM COMMITMENTS & AUDIT RIGHTS
+2.1 Royalty Rate: Licensee shall pay Licensor a running royalty of four percent (4.0%) of Net Sales. Minimum annual royalty commitment is $1,300,000 USD.
+2.2 Audit Rights & Penalty: Licensor may inspect Licensee's manufacturing and sales records once per calendar year upon thirty (30) days' written notice. If an audit reveals an underpayment greater than five percent (5%), Licensee shall reimburse Licensor for all audit costs plus 1.5% monthly interest.
+
+3. REPRESENTATIONS, WARRANTIES & INDEMNIFICATION
+3.1 Patent Validity Disclaimer: EXCEPT AS EXPRESSLY SET FORTH HEREIN, LICENSED PATENTS ARE PROVIDED "AS IS". LICENSOR DISCLAIMS ALL WARRANTIES OF NON-INFRINGEMENT.
+3.2 IP Indemnity: Licensee shall defend, indemnify, and hold harmless Licensor from all third-party claims arising out of the commercial distribution, manufacture, or safety defects of Licensed Products without financial limitation.
+
+4. LIMITATION OF LIABILITY
+4.1 NEITHER PARTY SHALL BE LIABLE FOR CONSEQUENTIAL, INDIRECT, OR SPECIAL DAMAGES.
+4.2 LICENSOR'S AGGREGATE LIABILITY UNDER THIS AGREEMENT SHALL BE CAPPED AT ROYALTIES ACTUALLY RECEIVED IN THE PRECEDING TWELVE (12) MONTHS.
+
+5. TERM, TERMINATION & PATENT CHALLENGES
+5.1 Term: This Agreement shall remain in effect until the expiration of the last-to-expire Licensed Patent unless terminated earlier.
+5.2 Termination for Patent Challenge: If Licensee directly or indirectly challenges the validity or enforceability of any Licensed Patent in any judicial forum or patent office, Licensor may terminate this Agreement immediately with thirty (30) days' notice.
+
+6. GOVERNING LAW & ARBITRATION
+6.1 Governing law shall be the laws of the State of California.
+6.2 All disputes shall be settled by binding JAMS arbitration in San Francisco, California.
+"""
+    },
+    "sample_dpa": {
+        "id": "contract_dpa_gdpr_soc2",
+        "title": "Enterprise GDPR Data Processing Addendum (DPA Article 28)",
+        "category": "Data Privacy & Regulatory Compliance",
+        "filename": "Enterprise_GDPR_DPA_Horizon_Cloud_2026.pdf",
+        "parties": ["Horizon Data Infrastructure B.V. (Data Processor)", "Meridian Financial Services AG (Data Controller)"],
+        "effective_date": "2026-05-01",
+        "governing_law": "Laws of the Netherlands / GDPR Article 28",
+        "monetary_value": "Statutory Fines Cap: €20,000,000 or 4% Global Turnover",
+        "text": """DATA PROCESSING ADDENDUM (GDPR ARTICLE 28 COMPLIANT)
+
+This Data Processing Addendum ("DPA") supplements the Principal Agreement between Meridian Financial Services AG ("Data Controller") and Horizon Data Infrastructure B.V. ("Data Processor"), dated May 1, 2026.
+
+1. SCOPE AND NATURE OF PROCESSING
+1.1 Processor shall process Personal Data solely on documented instructions from Controller, including with respect to transfers of Personal Data to a third country, unless required to do so by European Union or Member State law.
+1.2 The categories of data subjects include retail banking customers, employees, and beneficial owners.
+
+2. SUB-PROCESSOR AUTHORIZATION & SAFEGUARDS
+2.1 Prior Authorization: Processor shall not engage any new Sub-processor without thirty (30) days' prior written notification to Controller. Controller possesses the right to object on reasonable privacy or security grounds.
+2.2 Flow-Down Terms: Processor shall impose data protection obligations no less onerous than those set out in this DPA on all Sub-processors.
+
+3. SECURITY MEASURES & BREACH NOTIFICATION
+3.1 Security Standard: Processor implements technical and organizational measures compliant with ISO 27001 and SOC 2 Type II, including AES-256 encryption at rest and in transit.
+3.2 Incident Notification: In the event of a confirmed Personal Data Breach, Processor shall notify Controller in writing within twenty-four (24) hours of becoming aware of the breach, providing comprehensive remediation telemetry.
+
+4. AUDIT RIGHTS & ASSISTANCE
+4.1 Controller Audits: Processor shall permit Controller or an independent accredited auditor mandated by Controller to carry out audits, including on-site inspections, upon reasonable prior notice.
+4.2 Regulatory Assistance: Processor shall assist Controller in responding to data subjects exercising their Chapter III GDPR rights and conducting Data Protection Impact Assessments (DPIA).
+
+5. RETURN OR DELETION OF PERSONAL DATA
+5.1 Upon completion of processing services, Processor shall, at Controller's choice, delete or securely return all Personal Data and certify destruction within thirty (30) calendar days, unless statutory Union law requires retention.
+
+6. GOVERNING LAW & JURISDICTION
+6.1 This DPA shall be governed by the laws of the Netherlands.
+6.2 Any dispute arising out of this DPA shall be submitted to the exclusive jurisdiction of the competent court in Amsterdam, Netherlands.
+"""
     }
 }
+

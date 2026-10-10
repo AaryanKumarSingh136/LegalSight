@@ -64,3 +64,24 @@ def get_smart_contract_status(contract_id: str):
         "contract_id": contract_id,
         "smart_contract": sc.queryState()
     }
+
+@router.post("/trigger/{contract_id}")
+def execute_smart_contract_trigger(contract_id: str, payload: Dict[str, Any] = Body(default={})):
+    """
+    Execute an automated on-chain payment trigger or oracle event (e.g. SLA Breach or Escrow Release).
+    """
+    sc = smart_contract_registry.get(contract_id)
+    if not sc:
+        sc = SmartContract(contract_id=contract_id, name=f"Contract_{contract_id}")
+        sc.draftContract([])
+        smart_contract_registry[contract_id] = sc
+
+    trigger_name = payload.get("trigger_name", "SLA_BREACH_PENALTY")
+    receipt = sc.execute_trigger(trigger_name, payload)
+
+    return {
+        "contract_id": contract_id,
+        "receipt": receipt,
+        "smart_contract": sc.queryState()
+    }
+

@@ -37,9 +37,17 @@ export default function EntityList({ entities, onHighlightEntity }) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-      <div style={{ fontSize: '0.775rem', color: '#78716c', background: '#faf8f4', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.5rem 0.75rem' }}>
-        💡 Click any entity tag to locate and highlight it in the source agreement text.
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <div style={{ 
+        fontSize: '0.825rem', 
+        color: '#57534e', 
+        background: '#faf8f4', 
+        border: '1px solid var(--border-subtle)', 
+        borderRadius: '10px', 
+        padding: '0.85rem 1.15rem',
+        lineHeight: 1.5
+      }}>
+        💡 Click any extracted entity pill to automatically locate and highlight it in the source agreement text.
       </div>
 
       {Object.entries(groups).map(([catKey, config]) => {
@@ -52,25 +60,26 @@ export default function EntityList({ entities, onHighlightEntity }) {
             style={{ 
               background: config.bg, 
               border: `1px solid ${config.border}`, 
-              borderRadius: '10px', 
-              padding: '0.85rem' 
+              borderRadius: '12px', 
+              padding: '1.15rem 1.25rem',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
             }}
           >
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
-              gap: '0.45rem', 
+              gap: '0.55rem', 
               fontWeight: 700, 
-              fontSize: '0.825rem', 
+              fontSize: '0.875rem', 
               color: '#1c1917',
-              marginBottom: '0.65rem' 
+              marginBottom: '0.85rem' 
             }}>
               {config.icon}
               <span>{config.label}</span>
-              <span style={{ fontSize: '0.7rem', color: '#78716c', fontFamily: 'var(--font-mono)' }}>({items.length})</span>
+              <span style={{ fontSize: '0.75rem', color: '#78716c', fontFamily: 'var(--font-mono)' }}>({items.length})</span>
             </div>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem' }}>
               {items.map((ent, idx) => (
                 <div
                   key={idx}
@@ -78,30 +87,30 @@ export default function EntityList({ entities, onHighlightEntity }) {
                   style={{
                     background: '#ffffff',
                     border: '1px solid var(--border-subtle)',
-                    borderRadius: '6px',
-                    padding: '0.3rem 0.6rem',
+                    borderRadius: '8px',
+                    padding: '0.45rem 0.75rem',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '0.4rem',
-                    fontSize: '0.775rem',
+                    gap: '0.55rem',
+                    fontSize: '0.825rem',
                     color: '#1c1917',
                     fontWeight: 600,
                     cursor: 'pointer',
                     boxShadow: 'var(--shadow-sm)',
-                    transition: 'all 0.15s ease'
+                    transition: 'all 0.18s ease'
                   }}
                   title="Click to locate in contract"
                 >
                   <span>{ent.text}</span>
-                  <span style={{ fontSize: '0.65rem', color: '#78716c', background: '#f4f0e8', padding: '0.05rem 0.3rem', borderRadius: '3px', fontFamily: 'var(--font-mono)' }}>
+                  <span style={{ fontSize: '0.7rem', color: '#78716c', background: '#f4f0e8', padding: '0.1rem 0.4rem', borderRadius: '4px', fontFamily: 'var(--font-mono)' }}>
                     {Math.round((ent.confidence || 0.95) * 100)}%
                   </span>
                   <button
                     onClick={(e) => handleCopy(e, ent.text)}
-                    style={{ background: 'transparent', border: 'none', color: '#a8a29e', cursor: 'pointer', padding: '0 2px', display: 'flex', alignItems: 'center' }}
+                    style={{ background: 'transparent', border: 'none', color: '#a8a29e', cursor: 'pointer', padding: '0 3px', display: 'flex', alignItems: 'center' }}
                     title="Copy text"
                   >
-                    <Copy size={11} />
+                    <Copy size={12} />
                   </button>
                 </div>
               ))}

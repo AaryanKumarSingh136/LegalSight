@@ -9,7 +9,7 @@ export default function DocumentPane({
   clauses = []
 }) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [fontSize, setFontSize] = useState(13);
+  const [fontSize, setFontSize] = useState(14);
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
   const readerRef = useRef(null);
 
@@ -61,16 +61,16 @@ export default function DocumentPane({
   return (
     <div className="reviewer-pane">
       {/* Pane Header */}
-      <div className="pane-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', minWidth: 0 }}>
-          <div style={{ background: '#1c1917', color: '#ffffff', width: '26px', height: '26px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <FileText size={14} />
+      <div className="pane-header" style={{ padding: '0.9rem 1.35rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
+          <div style={{ background: '#1c1917', color: '#ffffff', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: 'var(--shadow-sm)' }}>
+            <FileText size={16} />
           </div>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontWeight: 700, fontSize: '0.875rem', color: '#1c1917', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={filename}>
+            <div style={{ fontWeight: 700, fontSize: '0.925rem', color: '#1c1917', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={filename}>
               {filename || 'Source Agreement Document'}
             </div>
-            <div style={{ fontSize: '0.7rem', color: '#78716c', display: 'flex', gap: '0.65rem' }}>
+            <div style={{ fontSize: '0.75rem', color: '#78716c', display: 'flex', gap: '0.75rem', marginTop: '0.15rem' }}>
               <span>{lines.length} lines</span>
               <span>•</span>
               <span>{totalWords.toLocaleString()} words</span>
@@ -81,10 +81,10 @@ export default function DocumentPane({
         </div>
 
         {/* Toolbar Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
           {/* Search Box */}
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <Search size={13} style={{ position: 'absolute', left: '8px', color: '#948b81' }} />
+            <Search size={14} style={{ position: 'absolute', left: '10px', color: '#948b81' }} />
             <input 
               type="text" 
               placeholder="Find in doc..."
@@ -93,52 +93,52 @@ export default function DocumentPane({
               style={{ 
                 background: '#ffffff', 
                 border: '1px solid var(--border-subtle)', 
-                borderRadius: '6px', 
-                padding: '0.3rem 0.5rem 0.3rem 1.6rem',
-                fontSize: '0.75rem',
+                borderRadius: '8px', 
+                padding: '0.4rem 0.65rem 0.4rem 2rem',
+                fontSize: '0.8rem',
                 color: '#1c1917',
-                width: searchTerm ? '140px' : '110px',
+                width: searchTerm ? '160px' : '130px',
                 transition: 'width 0.2s ease'
               }}
             />
             {searchTerm && (
-              <span style={{ position: 'absolute', right: '6px', fontSize: '0.65rem', color: '#78716c', fontWeight: 600 }}>
+              <span style={{ position: 'absolute', right: '8px', fontSize: '0.7rem', color: '#78716c', fontWeight: 600 }}>
                 {matchingLineIndices.length > 0 ? `${currentMatchIndex + 1}/${matchingLineIndices.length}` : '0'}
               </span>
             )}
           </div>
 
           {searchTerm && matchingLineIndices.length > 0 && (
-            <div style={{ display: 'flex', gap: '2px' }}>
-              <button className="btn btn-secondary btn-sm" onClick={handlePrevMatch} style={{ padding: '0.25rem 0.4rem' }}>
-                <ChevronUp size={12} />
+            <div style={{ display: 'flex', gap: '4px' }}>
+              <button className="btn btn-secondary btn-sm" onClick={handlePrevMatch} style={{ padding: '0.35rem 0.55rem' }}>
+                <ChevronUp size={13} />
               </button>
-              <button className="btn btn-secondary btn-sm" onClick={handleNextMatch} style={{ padding: '0.25rem 0.4rem' }}>
-                <ChevronDown size={12} />
+              <button className="btn btn-secondary btn-sm" onClick={handleNextMatch} style={{ padding: '0.35rem 0.55rem' }}>
+                <ChevronDown size={13} />
               </button>
             </div>
           )}
 
           {/* Zoom controls */}
-          <div style={{ display: 'flex', background: '#f4f0e8', borderRadius: '6px', padding: '2px' }}>
+          <div style={{ display: 'flex', background: '#f4f0e8', borderRadius: '8px', padding: '3px', alignItems: 'center' }}>
             <button 
               className="btn btn-secondary btn-sm" 
-              style={{ padding: '0.2rem 0.45rem', background: 'transparent', border: 'none', boxShadow: 'none' }}
-              onClick={() => setFontSize(prev => Math.max(10, prev - 1))}
+              style={{ padding: '0.25rem 0.55rem', background: 'transparent', border: 'none', boxShadow: 'none' }}
+              onClick={() => setFontSize(prev => Math.max(11, prev - 1))}
               title="Decrease font size"
             >
-              <ZoomOut size={12} />
+              <ZoomOut size={13} />
             </button>
-            <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '0.2rem 0.3rem', color: '#57534e' }}>
-              {fontSize}
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '0.2rem 0.45rem', color: '#57534e' }}>
+              {fontSize}px
             </span>
             <button 
               className="btn btn-secondary btn-sm" 
-              style={{ padding: '0.2rem 0.45rem', background: 'transparent', border: 'none', boxShadow: 'none' }}
-              onClick={() => setFontSize(prev => Math.min(18, prev + 1))}
+              style={{ padding: '0.25rem 0.55rem', background: 'transparent', border: 'none', boxShadow: 'none' }}
+              onClick={() => setFontSize(prev => Math.min(20, prev + 1))}
               title="Increase font size"
             >
-              <ZoomIn size={12} />
+              <ZoomIn size={13} />
             </button>
           </div>
         </div>
@@ -149,15 +149,15 @@ export default function DocumentPane({
         <div style={{ 
           background: '#fef9c3', 
           borderBottom: '1px solid #fde047',
-          padding: '0.45rem 1rem', 
+          padding: '0.65rem 1.35rem', 
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center',
-          fontSize: '0.75rem',
+          fontSize: '0.8rem',
           color: '#854d0e'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <Sparkles size={13} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Sparkles size={14} />
             <span>Target Focused: <strong>{activeHighlight.title || activeHighlight.text}</strong></span>
           </div>
           <button 
@@ -170,10 +170,10 @@ export default function DocumentPane({
               fontWeight: 700,
               display: 'flex',
               alignItems: 'center',
-              gap: '2px'
+              gap: '4px'
             }}
           >
-            <X size={12} /> Clear Focus
+            <X size={13} /> Clear Focus
           </button>
         </div>
       )}

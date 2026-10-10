@@ -200,20 +200,20 @@ export default function Reviewer({
     <div className="reviewer-container">
       {/* Top Reviewer Command Bar */}
       <div className="reviewer-command-bar">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
           <button className="btn btn-secondary btn-sm" onClick={onBackToDashboard}>
-            <ArrowLeft size={14} />
+            <ArrowLeft size={15} />
             <span>Repository</span>
           </button>
 
           <div>
-            <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#1c1917', fontFamily: 'var(--font-main)' }}>
+            <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1c1917', fontFamily: 'var(--font-main)' }}>
               {contractData?.title || 'Contract Review Workspace'}
             </div>
-            <div style={{ fontSize: '0.725rem', color: '#78716c', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <div style={{ fontSize: '0.775rem', color: '#78716c', display: 'flex', gap: '0.65rem', alignItems: 'center', marginTop: '0.2rem' }}>
               <span>ID: <code style={{ fontFamily: 'var(--font-mono)' }}>{contractId}</code></span>
               <span>•</span>
-              <span className={`badge-risk ${riskSummary?.overall_level || 'LOW'}`} style={{ padding: '0.1rem 0.4rem', fontSize: '0.65rem' }}>
+              <span className={`badge-risk ${riskSummary?.overall_level || 'LOW'}`}>
                 {riskSummary?.overall_level || 'LOW'} ({riskSummary?.overall_score || 0}/100)
               </span>
             </div>
@@ -221,14 +221,14 @@ export default function Reviewer({
         </div>
 
         {/* Action Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
           {/* Playbook Selector */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: '#faf8f4', padding: '0.25rem 0.65rem', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
-            <Sliders size={13} color="#c29037" />
-            <span style={{ fontSize: '0.725rem', fontWeight: 700, color: '#44403c' }}>Playbook:</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#faf8f4', padding: '0.4rem 0.85rem', borderRadius: '10px', border: '1px solid var(--border-subtle)' }}>
+            <Sliders size={14} color="#c29037" />
+            <span style={{ fontSize: '0.775rem', fontWeight: 700, color: '#44403c' }}>Playbook:</span>
             <select
               className="form-select"
-              style={{ padding: '0.2rem 0.4rem', fontSize: '0.75rem', border: 'none', background: 'transparent', fontWeight: 600, color: '#1c1917', cursor: 'pointer' }}
+              style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem', border: 'none', background: 'transparent', fontWeight: 600, color: '#1c1917', cursor: 'pointer' }}
               value={selectedProfile}
               onChange={(e) => handleProfileChange(e.target.value)}
               disabled={reEvaluating}
@@ -238,20 +238,20 @@ export default function Reviewer({
               <option value="Strict Compliance">Strict Compliance</option>
               <option value="Balanced Commercial">Balanced Commercial</option>
             </select>
-            {reEvaluating && <RefreshCw size={12} className="animate-spin text-amber-700" />}
+            {reEvaluating && <RefreshCw size={13} className="animate-spin text-amber-700" />}
           </div>
 
           {/* Review Progress Ring */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', background: '#f4fbf6', border: '1px solid #bbf7d0', padding: '0.35rem 0.75rem', borderRadius: '8px' }}>
-            <CheckCircle size={14} color="#15803d" />
-            <span style={{ fontSize: '0.725rem', fontWeight: 700, color: '#14532d' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', background: '#f4fbf6', border: '1px solid #bbf7d0', padding: '0.45rem 0.95rem', borderRadius: '10px' }}>
+            <CheckCircle size={16} color="#15803d" />
+            <span style={{ fontSize: '0.775rem', fontWeight: 700, color: '#14532d' }}>
               {approvedCount}/{totalCount} Approved ({progressPercent}%)
             </span>
           </div>
 
           {/* Export & Sign-Off Buttons */}
           <button className="btn btn-secondary btn-sm" onClick={handleExportPdf} title="Export executive report as PDF">
-            <Download size={13} />
+            <Download size={14} />
             <span>PDF Brief</span>
           </button>
 
@@ -259,7 +259,7 @@ export default function Reviewer({
             className="btn btn-gold-shimmer btn-sm"
             onClick={() => setIsSignOffModalOpen(true)}
           >
-            <Award size={14} />
+            <Award size={15} />
             <span>Sign-Off & Seal</span>
           </button>
         </div>
@@ -279,26 +279,27 @@ export default function Reviewer({
         {/* Right Pane: Intelligence Console */}
         <div className="reviewer-pane">
           {/* Intelligence Console Header Tabs */}
-          <div className="pane-header" style={{ padding: '0.5rem 1rem' }}>
-            <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap' }}>
+          <div className="pane-header" style={{ padding: '0.75rem 1.25rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               <button 
                 className={`tab-btn ${activeTab === 'clauses' ? 'active' : ''}`}
                 onClick={() => setActiveTab('clauses')}
                 style={{
                   background: activeTab === 'clauses' ? '#ffffff' : 'transparent',
                   border: activeTab === 'clauses' ? '1px solid var(--border-subtle)' : 'none',
-                  padding: '0.35rem 0.75rem',
-                  borderRadius: '6px',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '8px',
                   fontWeight: activeTab === 'clauses' ? 700 : 500,
-                  fontSize: '0.775rem',
+                  fontSize: '0.825rem',
                   color: activeTab === 'clauses' ? '#1c1917' : '#78716c',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.35rem'
+                  gap: '0.45rem',
+                  boxShadow: activeTab === 'clauses' ? 'var(--shadow-sm)' : 'none'
                 }}
               >
-                <Layers size={13} />
+                <Layers size={14} />
                 <span>Clauses & Redlines ({clauses.length})</span>
               </button>
 
@@ -308,18 +309,19 @@ export default function Reviewer({
                 style={{
                   background: activeTab === 'summary' ? '#ffffff' : 'transparent',
                   border: activeTab === 'summary' ? '1px solid var(--border-subtle)' : 'none',
-                  padding: '0.35rem 0.75rem',
-                  borderRadius: '6px',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '8px',
                   fontWeight: activeTab === 'summary' ? 700 : 500,
-                  fontSize: '0.775rem',
+                  fontSize: '0.825rem',
                   color: activeTab === 'summary' ? '#1c1917' : '#78716c',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.35rem'
+                  gap: '0.45rem',
+                  boxShadow: activeTab === 'summary' ? 'var(--shadow-sm)' : 'none'
                 }}
               >
-                <Shield size={13} />
+                <Shield size={14} />
                 <span>Risk Radar ({riskSummary?.overall_score || 0}/100)</span>
               </button>
 
@@ -329,18 +331,19 @@ export default function Reviewer({
                 style={{
                   background: activeTab === 'entities' ? '#ffffff' : 'transparent',
                   border: activeTab === 'entities' ? '1px solid var(--border-subtle)' : 'none',
-                  padding: '0.35rem 0.75rem',
-                  borderRadius: '6px',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '8px',
                   fontWeight: activeTab === 'entities' ? 700 : 500,
-                  fontSize: '0.775rem',
+                  fontSize: '0.825rem',
                   color: activeTab === 'entities' ? '#1c1917' : '#78716c',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.35rem'
+                  gap: '0.45rem',
+                  boxShadow: activeTab === 'entities' ? 'var(--shadow-sm)' : 'none'
                 }}
               >
-                <Users size={13} />
+                <Users size={14} />
                 <span>Entities ({entities.length})</span>
               </button>
 
@@ -350,18 +353,19 @@ export default function Reviewer({
                 style={{
                   background: activeTab === 'audit' ? '#ffffff' : 'transparent',
                   border: activeTab === 'audit' ? '1px solid var(--border-subtle)' : 'none',
-                  padding: '0.35rem 0.75rem',
-                  borderRadius: '6px',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '8px',
                   fontWeight: activeTab === 'audit' ? 700 : 500,
-                  fontSize: '0.775rem',
+                  fontSize: '0.825rem',
                   color: activeTab === 'audit' ? '#1c1917' : '#78716c',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.35rem'
+                  gap: '0.45rem',
+                  boxShadow: activeTab === 'audit' ? 'var(--shadow-sm)' : 'none'
                 }}
               >
-                <History size={13} />
+                <History size={14} />
                 <span>Ledger ({auditLogs.length})</span>
               </button>
             </div>
@@ -373,13 +377,13 @@ export default function Reviewer({
             {activeTab === 'clauses' && (
               <div>
                 {/* Filter and Search Bar */}
-                <div style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <div style={{ marginBottom: '1.35rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <div style={{ display: 'flex', gap: '0.65rem', alignItems: 'center' }}>
                     <input 
                       type="text" 
                       placeholder="Search clauses by keyword or category..." 
                       className="form-input" 
-                      style={{ padding: '0.35rem 0.65rem', fontSize: '0.775rem' }}
+                      style={{ padding: '0.55rem 0.85rem', fontSize: '0.825rem' }}
                       value={clauseSearch}
                       onChange={(e) => setClauseSearch(e.target.value)}
                     />
@@ -387,18 +391,18 @@ export default function Reviewer({
                       <button 
                         className="btn btn-secondary btn-sm" 
                         onClick={handleApproveAllLowRisk}
-                        style={{ whiteSpace: 'nowrap', fontSize: '0.7rem' }}
+                        style={{ whiteSpace: 'nowrap', fontSize: '0.775rem' }}
                         title="Approve all low-risk provisions with 1 click"
                       >
-                        <CheckCircle2 size={12} color="#15803d" />
+                        <CheckCircle2 size={13} color="#15803d" />
                         <span>Approve Low Risk</span>
                       </button>
                     )}
                   </div>
 
                   {/* Risk Level Pills */}
-                  <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.7rem', color: '#78716c', fontWeight: 700 }}>Risk Filter:</span>
+                  <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.75rem', color: '#78716c', fontWeight: 700 }}>Risk Filter:</span>
                     {['ALL', 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW'].map(level => (
                       <button
                         key={level}
@@ -407,11 +411,12 @@ export default function Reviewer({
                           background: riskFilter === level ? '#1c1917' : '#f4f0e8',
                           color: riskFilter === level ? '#ffffff' : '#57534e',
                           border: 'none',
-                          padding: '0.2rem 0.55rem',
-                          borderRadius: '4px',
-                          fontSize: '0.675rem',
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: '6px',
+                          fontSize: '0.725rem',
                           fontWeight: 700,
-                          cursor: 'pointer'
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease'
                         }}
                       >
                         {level} {level !== 'ALL' && `(${clauses.filter(c => c.risk_level === level).length})`}
@@ -422,8 +427,8 @@ export default function Reviewer({
 
                 {/* Clauses List */}
                 {filteredClauses.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#78716c' }}>
-                    <p style={{ fontWeight: 600 }}>No clauses match the selected filters.</p>
+                  <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: '#78716c' }}>
+                    <p style={{ fontWeight: 600, fontSize: '0.95rem' }}>No clauses match the selected filters.</p>
                   </div>
                 ) : (
                   filteredClauses.map((clause) => (
@@ -445,6 +450,7 @@ export default function Reviewer({
               <RiskRadar 
                 riskSummary={riskSummary}
                 riskProfile={selectedProfile}
+                clauses={clauses}
               />
             )}
 

@@ -102,10 +102,27 @@ export const api = {
   draftSmartContract: (contractId) => apiFetch(`/smart-contracts/draft/${contractId}`, { method: 'POST' }),
   deploySmartContract: (contractId, gasLimit = 2500000) => apiFetch(`/smart-contracts/deploy/${contractId}`, { method: 'POST', body: JSON.stringify({ gas_limit: gasLimit }) }),
   getSmartContractStatus: (contractId) => apiFetch(`/smart-contracts/status/${contractId}`),
+  triggerSmartContract: (contractId, triggerName) => apiFetch(`/smart-contracts/trigger/${contractId}`, { method: 'POST', body: JSON.stringify({ trigger_name: triggerName }) }),
+
+  // Datasets & Legal AI Models
+  getDatasetSummary: () => apiFetch('/datasets/summary'),
+  getDatasetProvisions: (datasetName = null, category = null, keyword = null) => {
+    let url = '/datasets/provisions';
+    const params = [];
+    if (datasetName) params.push(`dataset_name=${encodeURIComponent(datasetName)}`);
+    if (category) params.push(`category=${encodeURIComponent(category)}`);
+    if (keyword) params.push(`keyword=${encodeURIComponent(keyword)}`);
+    if (params.length > 0) url += `?${params.join('&')}`;
+    return apiFetch(url);
+  },
+  verifyNli: (clauseText) => apiFetch('/datasets/verify-nli', { method: 'POST', body: JSON.stringify({ clause_text: clauseText }) }),
+  getModels: () => apiFetch('/datasets/models'),
+  evaluateModel: (modelId, clauseText) => apiFetch('/datasets/models/evaluate', { method: 'POST', body: JSON.stringify({ model_id: modelId, clause_text: clauseText }) }),
 
   // Admin & Reports
   getAdminUsers: () => apiFetch('/admin/users'),
   getPlaybooks: () => apiFetch('/admin/playbooks'),
+  updatePlaybook: (payload) => apiFetch('/admin/playbooks', { method: 'POST', body: JSON.stringify(payload) }),
   getModelStatus: () => apiFetch('/admin/models/fine-tuning'),
   getPortfolioReport: () => apiFetch('/reports/portfolio'),
   getDeadlines: () => apiFetch('/reports/deadlines'),

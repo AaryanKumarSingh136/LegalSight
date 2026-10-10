@@ -216,8 +216,23 @@ async def get_contract_details(
 
         raise HTTPException(status_code=404, detail=f"Contract '{contract_id}' not found.")
 
+    # Restore from DB into orchestrator state
+    restored_job = orchestrator.restore_from_db(contract_id, db)
+    meta = orchestrator.contracts.get(contract_id)
+    raw_text = orchestrator.raw_texts.get(contract_id, db_contract.raw_text)
+
+    audit_service.log_event(
+        contract_id=contract_id,
+        user_id=current_user.user_id if current_user else None,
+        actor=current_user.username if current_user else "Analyst",
+        event_type="CONTRACT_VIEWED",
+        action=f"Contract '{db_contract.filename}' loaded from DB and viewed",
+        details={"contract_id": contract_id},
+        severity="INFO"
+    )
+
     return {
-        "metadata": {
+        "metadata": meta.model_dump() if meta else {
             "id": db_contract.contract_id,
             "filename": db_contract.filename,
             "file_size_bytes": db_contract.file_size_bytes,
@@ -227,7 +242,8 @@ async def get_contract_details(
             "total_words": len(db_contract.raw_text.split()),
             "page_count": max(1, len(db_contract.raw_text.split()) // 350)
         },
-        "raw_text": db_contract.raw_text,
-        "job_id": None,
-        "analysis": None
+        "raw_text": raw_text,
+        "job_id": restored_job.job_id if restored_job else None,
+        "analysis": restored_job.model_dump() if restored_job else None
     }
+

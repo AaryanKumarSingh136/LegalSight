@@ -8,6 +8,8 @@ import SearchHub from './components/SearchHub';
 import SmartContractStudio from './components/SmartContractStudio';
 import AdminConsole from './components/AdminConsole';
 import AuditLogViewer from './components/AuditLogViewer';
+import DatasetsHub from './components/DatasetsHub';
+import ReportsHub from './components/ReportsHub';
 import { ToastProvider } from './components/Toast';
 
 export default function App() {
@@ -82,6 +84,14 @@ export default function App() {
               onBackToDashboard={() => setActiveTab('dashboard')}
               currentUser={currentUser}
             />
+          )}
+
+          {activeTab === 'datasets' && (
+            <DatasetsHub />
+          )}
+
+          {activeTab === 'reports' && (
+            <ReportsHub />
           )}
 
           {activeTab === 'search' && (

@@ -156,3 +156,62 @@ def test_audit_logs():
     assert res.status_code == 200
     events = res.json()
     assert len(events) > 0
+
+def test_datasets_and_models_endpoints():
+    # 1. Dataset summary
+    sum_res = client.get("/api/datasets/summary")
+    assert sum_res.status_code == 200
+    sum_data = sum_res.json()
+    assert sum_data["total_datasets"] >= 4
+    assert sum_data["total_provisions"] >= 10
+
+    # 2. Provisions query
+    prov_res = client.get("/api/datasets/provisions?dataset_name=CUAD")
+    assert prov_res.status_code == 200
+    prov_data = prov_res.json()
+    assert prov_data["total"] >= 1
+    assert "clause_text" in prov_data["provisions"][0]
+
+    # 3. NLI verification
+    nli_res = client.post("/api/datasets/verify-nli", json={
+        "clause_text": "Customer shall indemnify and defend Provider without financial cap from and against all liabilities in perpetuity."
+    })
+    assert nli_res.status_code == 200
+    nli_data = nli_res.json()
+    assert nli_data["hypotheses_evaluated"] > 0
+    # Should detect contradiction on uncapped liability or perpetuity
+    labels = [r["label"] for r in nli_data["results"]]
+    assert "CONTRADICTION" in labels or "ENTAILMENT" in labels
+
+    # 4. Model listing
+    models_res = client.get("/api/datasets/models")
+    assert models_res.status_code == 200
+    models_data = models_res.json()
+    assert models_data["total_models"] >= 4
+
+    # 5. Live Model Evaluation
+    eval_res = client.post("/api/datasets/models/evaluate", json={
+        "model_id": "legal-bert",
+        "clause_text": "Each party shall indemnify, defend and hold harmless the other party against patent infringement claims."
+    })
+    assert eval_res.status_code == 200
+    eval_data = eval_res.json()
+    assert eval_data["evaluated_category"] == "Indemnity & Hold Harmless"
+    assert eval_data["confidence_score"] > 0.8
+    assert "inference_time_ms" in eval_data
+
+def test_smart_contracts_solidity_and_trigger():
+    draft_res = client.post("/api/smart-contracts/draft/cnt_sample_msa")
+    assert draft_res.status_code == 200
+    assert "solidity_code" in draft_res.json()["draft_summary"]
+    assert "pragma solidity ^0.8.24" in draft_res.json()["draft_summary"]["solidity_code"]
+
+    # Test trigger execution
+    trig_res = client.post("/api/smart-contracts/trigger/cnt_sample_msa", json={
+        "trigger_name": "SLA_BREACH_PENALTY"
+    })
+    assert trig_res.status_code == 200
+    receipt = trig_res.json()["receipt"]
+    assert receipt["status"] == "CONFIRMED"
+    assert "event_emitted" in receipt
+

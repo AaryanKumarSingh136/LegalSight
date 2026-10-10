@@ -19,6 +19,7 @@ from app.api.precedents import router as precedents_router
 from app.api.knowledge_graph import router as kg_router
 from app.api.export import router as export_router
 from app.api.ws import router as ws_router
+from app.api.datasets import router as datasets_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -63,6 +64,7 @@ app.include_router(precedents_router)
 app.include_router(kg_router)
 app.include_router(export_router)
 app.include_router(ws_router)
+app.include_router(datasets_router)
 
 @app.get("/")
 def root_status():

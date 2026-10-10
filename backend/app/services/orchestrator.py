@@ -5,7 +5,8 @@ from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional, Callable
 from app.models.schemas import (
     AnalysisState, ContractMetadata, RiskProfileType, RiskScoreSummary,
-    ClauseBlock, EntityExtraction, KnowledgeGraphData, RiskLevel
+    ClauseBlock, EntityExtraction, KnowledgeGraphData, RiskLevel,
+    RedlineSuggestion, ClauseCategory
 )
 from app.services.parser import DocumentParser
 from app.services.nlp_engine import NLPEngine
@@ -282,6 +283,98 @@ class Orchestrator:
             db.close()
         except Exception as e:
             pass
+
+    def restore_from_db(self, contract_id: str, db: Any) -> Optional[AnalysisState]:
+        """
+        Restore contract metadata, clauses, and analysis state from relational DB.
+        """
+        db_contract = db.query(Contract).filter(Contract.contract_id == contract_id).first()
+        if not db_contract:
+            return None
+
+        # Reconstruct ContractMetadata
+        contract_meta = ContractMetadata(
+            id=db_contract.contract_id,
+            filename=db_contract.filename,
+            file_size_bytes=db_contract.file_size_bytes or len(db_contract.raw_text.encode('utf-8')),
+            file_type=db_contract.file_type or "DOCX",
+            uploaded_at=db_contract.created_at or utc_now(),
+            page_count=max(1, len(db_contract.raw_text.split()) // 350),
+            total_words=len(db_contract.raw_text.split()),
+            risk_profile=RiskProfileType(db_contract.risk_profile) if db_contract.risk_profile in [p.value for p in RiskProfileType] else RiskProfileType.VENDOR_STANDARD
+        )
+        self.contracts[contract_id] = contract_meta
+        self.raw_texts[contract_id] = db_contract.raw_text
+
+        # Reconstruct clauses
+        clauses: List[ClauseBlock] = []
+        for cl in db_contract.clauses:
+            red_flags = []
+            try:
+                red_flags = json.loads(cl.red_flags) if cl.red_flags else []
+            except Exception:
+                pass
+
+            # Match ClauseCategory enum
+            cat_enum = ClauseCategory.OTHER
+            for c_enum in ClauseCategory:
+                if c_enum.value.lower() == cl.category.lower() or c_enum.value.lower() in cl.category.lower():
+                    cat_enum = c_enum
+                    break
+
+            risk_level_enum = RiskLevel.LOW
+            try:
+                risk_level_enum = RiskLevel(cl.risk_level)
+            except Exception:
+                pass
+
+            redline_obj = None
+            if cl.redline_text:
+                redline_obj = RedlineSuggestion(
+                    original_text=cl.text,
+                    suggested_replacement=cl.redline_text,
+                    rationale=cl.redline_rationale or "Harmonized market-aligned revision",
+                    action_type="REPLACE"
+                )
+
+            clause_block = ClauseBlock(
+                id=cl.clause_id,
+                title=cl.title,
+                category=cat_enum,
+                text=cl.text,
+                start_idx=cl.start_idx or 0,
+                end_idx=cl.end_idx or 0,
+                risk_level=risk_level_enum,
+                risk_score=cl.risk_score or 0,
+                red_flag_phrases=red_flags,
+                redline=redline_obj,
+                user_approved=cl.user_approved or False,
+                notes=cl.notes
+            )
+            clauses.append(clause_block)
+
+        # Extract entities from raw text
+        entities = NLPEngine.extract_entities(db_contract.raw_text)
+
+        job_id = f"job_{db_contract.contract_id.replace('cnt_', '')}"
+        risk_profile = contract_meta.risk_profile
+        risk_summary = RiskEvaluator.compute_summary(clauses, risk_profile)
+
+        analysis_state = AnalysisState(
+            contract_id=contract_id,
+            job_id=job_id,
+            current_step=17,
+            step_description="Contract analysis restored from persistent database",
+            status=db_contract.status or "PROCESSED",
+            progress_percentage=100,
+            entities=entities,
+            clauses=clauses,
+            risk_summary=risk_summary,
+            finalized_at=db_contract.created_at
+        )
+
+        self.jobs[job_id] = analysis_state
+        return analysis_state
 
     async def evaluate_risk_profile(self, job_id: str, profile: RiskProfileType):
         if job_id not in self.jobs:

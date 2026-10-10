@@ -33,8 +33,15 @@ export default function AdminConsole({ currentUser }) {
     }
   };
 
-  const handleSavePlaybook = () => {
-    addToast('Playbook parameters and risk sensitivity saved!', 'success', 2500);
+  const handleSavePlaybook = async (pb) => {
+    try {
+      await api.updatePlaybook(pb);
+      addToast(`Playbook '${pb.name}' sensitivity calibrated & saved!`, 'success', 2500);
+      fetchAdminData();
+    } catch (err) {
+      console.error(err);
+      addToast('Failed to save playbook settings', 'error');
+    }
   };
 
   return (
@@ -177,32 +184,58 @@ export default function AdminConsole({ currentUser }) {
             Risk Sensitivity Calibration Matrix
           </h3>
           <p style={{ fontSize: '0.775rem', color: '#78716c', marginBottom: '1.25rem' }}>
-            Adjust weights for liability caps, indemnification, and governing law clauses across corporate risk profiles.
+            Adjust risk tolerance thresholds, liability super-cap rules, and indemnification policies across platform playbooks.
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
-            {[
-              { name: 'Indemnity Exposure Weight', val: 85, desc: 'Penalize uncapped indemnities and third-party IP defense clauses' },
-              { name: 'Super-Cap Multiplier', val: 70, desc: 'Threshold for liability caps exceeding 2x annual contract fees' },
-              { name: 'Unilateral Termination Penalty', val: 90, desc: 'Weight for clauses allowing one party to cancel in < 30 days' },
-              { name: 'Restrictive Covenant Strictness', val: 65, desc: 'Filter non-compete clauses with duration > 12 months' }
-            ].map((param, i) => (
-              <div key={i} style={{ background: '#fdfbf7', border: '1px solid var(--border-subtle)', borderRadius: '10px', padding: '1rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                  <span style={{ fontWeight: 700, fontSize: '0.825rem', color: '#1c1917' }}>{param.name}</span>
-                  <span style={{ fontWeight: 800, fontSize: '0.825rem', color: '#854d0e', fontFamily: 'var(--font-mono)' }}>{param.val}%</span>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1rem' }}>
+            {playbooks.map((pb) => (
+              <div key={pb.id} style={{ background: '#fdfbf7', border: '1px solid var(--border-subtle)', borderRadius: '10px', padding: '1.1rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1c1917' }}>{pb.name}</span>
+                    <span style={{ fontWeight: 800, fontSize: '0.85rem', color: '#854d0e', fontFamily: 'var(--font-mono)' }}>
+                      Tolerance: {pb.tolerance}%
+                    </span>
+                  </div>
+                  <p style={{ fontSize: '0.75rem', color: '#78716c', marginBottom: '0.75rem', lineHeight: 1.45 }}>{pb.description}</p>
+
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#78716c', marginBottom: '0.2rem' }}>
+                      <span>Strict Compliance (0%)</span>
+                      <span>Lenient Commercial (100%)</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="0" 
+                      max="100" 
+                      value={pb.tolerance} 
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        setPlaybooks(prev => prev.map(p => p.id === pb.id ? { ...p, tolerance: val } : p));
+                      }}
+                      style={{ width: '100%', accentColor: '#c29037' }} 
+                    />
+                  </div>
+
+                  {pb.rules && (
+                    <div style={{ fontSize: '0.72rem', background: '#f5efe6', padding: '0.5rem', borderRadius: '6px', color: '#44403c', marginBottom: '0.75rem' }}>
+                      <div>• <strong>Liability Cap:</strong> {pb.rules.liability_cap_multiplier}</div>
+                      <div>• <strong>Reciprocal Indemnity:</strong> {pb.rules.indemnity_reciprocal ? 'Mandatory' : 'Optional'}</div>
+                    </div>
+                  )}
                 </div>
-                <p style={{ fontSize: '0.725rem', color: '#78716c', marginBottom: '0.75rem' }}>{param.desc}</p>
-                <input type="range" min="0" max="100" defaultValue={param.val} style={{ width: '100%', accentColor: '#c29037' }} />
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '0.5rem', borderTop: '1px solid #f0ebe1' }}>
+                  <button 
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => handleSavePlaybook(pb)}
+                  >
+                    <CheckCircle2 size={12} />
+                    <span>Save Playbook</span>
+                  </button>
+                </div>
               </div>
             ))}
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
-            <button className="btn btn-primary" onClick={handleSavePlaybook}>
-              <CheckCircle2 size={14} />
-              <span>Save & Publish Calibrated Matrix</span>
-            </button>
           </div>
         </div>
       )}

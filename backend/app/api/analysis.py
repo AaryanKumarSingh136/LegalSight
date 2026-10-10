@@ -14,12 +14,28 @@ router = APIRouter(prefix="/api/analysis", tags=["Analysis & Risk Scoring"])
 @router.get("/job/{job_id}", response_model=AnalysisState)
 def get_job_state(
     job_id: str,
-    current_user: Optional[User] = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     """Retrieve full analysis status, extracted entities, clauses, and risk scorecard."""
-    if job_id not in orchestrator.jobs:
-        raise HTTPException(status_code=404, detail="Job not found.")
-    return orchestrator.jobs[job_id]
+    if job_id in orchestrator.jobs:
+        return orchestrator.jobs[job_id]
+
+    # Attempt to restore from DB: derive contract_id from job_id or search DB
+    candidate_contract_id = job_id.replace("job_", "cnt_")
+    restored = orchestrator.restore_from_db(candidate_contract_id, db)
+    if restored:
+        return restored
+
+    # Search contracts by prefix or match
+    all_contracts = db.query(Contract).all()
+    for c in all_contracts:
+        if c.contract_id in job_id or job_id.replace("job_", "") in c.contract_id:
+            restored = orchestrator.restore_from_db(c.contract_id, db)
+            if restored:
+                return restored
+
+    raise HTTPException(status_code=404, detail="Job not found.")
 
 @router.get("/contract/{contract_id}", response_model=AnalysisState)
 def get_contract_analysis(
@@ -32,7 +48,12 @@ def get_contract_analysis(
     if job:
         return job
 
+    restored = orchestrator.restore_from_db(contract_id, db)
+    if restored:
+        return restored
+
     raise HTTPException(status_code=404, detail="Analysis for contract not found.")
+
 
 @router.post("/job/{job_id}/re-evaluate")
 async def re_evaluate_profile(

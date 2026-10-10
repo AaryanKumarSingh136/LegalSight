@@ -49,6 +49,22 @@ export default function Header({
         </button>
 
         <button 
+          className={`nav-item ${activeTab === 'datasets' ? 'active' : ''}`}
+          onClick={() => setActiveTab('datasets')}
+        >
+          <BookOpen size={15} />
+          <span>Datasets & Models</span>
+        </button>
+
+        <button 
+          className={`nav-item ${activeTab === 'reports' ? 'active' : ''}`}
+          onClick={() => setActiveTab('reports')}
+        >
+          <Scale size={15} />
+          <span>Reports & Deadlines</span>
+        </button>
+
+        <button 
           className={`nav-item ${activeTab === 'search' ? 'active' : ''}`}
           onClick={() => setActiveTab('search')}
         >
