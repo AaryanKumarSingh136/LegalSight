@@ -807,7 +807,7 @@ body {
 }
 
 .toast-item {
-  pointer-events: auto;
+  pointer-events: none;
   display: flex;
   align-items: center;
   gap: 0.85rem;

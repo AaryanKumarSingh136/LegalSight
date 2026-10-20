@@ -140,6 +140,7 @@ export default function DatasetsHub() {
 
           <div style={{ display: 'flex', gap: '0.5rem', background: '#f5f0e6', padding: '0.35rem', borderRadius: '8px' }}>
             <button
+              data-testid="tab-datasets-provisions"
               className={`btn btn-sm ${activeTab === 'provisions' ? 'btn-primary' : 'btn-secondary'}`}
               onClick={() => setActiveTab('provisions')}
             >
@@ -147,6 +148,7 @@ export default function DatasetsHub() {
               <span>Provisions Explorer</span>
             </button>
             <button
+              data-testid="tab-datasets-models"
               className={`btn btn-sm ${activeTab === 'models' ? 'btn-primary' : 'btn-secondary'}`}
               onClick={() => setActiveTab('models')}
             >
@@ -154,6 +156,7 @@ export default function DatasetsHub() {
               <span>Model Registry</span>
             </button>
             <button
+              data-testid="tab-datasets-playground"
               className={`btn btn-sm ${activeTab === 'playground' ? 'btn-primary' : 'btn-secondary'}`}
               onClick={() => setActiveTab('playground')}
             >
@@ -498,6 +501,7 @@ export default function DatasetsHub() {
             </div>
 
             <button
+              data-testid="btn-run-eval"
               className="btn btn-primary"
               style={{ width: '100%', justifyContent: 'center' }}
               onClick={handleRunEvaluation}
@@ -509,7 +513,7 @@ export default function DatasetsHub() {
           </div>
 
           {/* Right Column: Inference Results */}
-          <div className="glass-card" style={{ padding: '1.75rem' }}>
+          <div className="glass-card" data-testid="eval-output-panel" style={{ padding: '1.75rem' }}>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1c1917', fontFamily: 'var(--font-serif)', marginBottom: '0.5rem' }}>
               Inference & NLI Verification Output
             </h3>

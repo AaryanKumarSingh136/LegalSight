@@ -145,6 +145,7 @@ export default function SmartContractStudio({ selectedContractId }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid #f4efe8', flexWrap: 'wrap', gap: '0.75rem' }}>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button 
+              data-testid="btn-synthesize-rules"
               className="btn btn-primary"
               onClick={handleDraft}
               disabled={loading}
@@ -154,6 +155,7 @@ export default function SmartContractStudio({ selectedContractId }) {
             </button>
 
             <button 
+              data-testid="btn-simulate-deploy"
               className="btn btn-gold-shimmer"
               onClick={handleDeploy}
               disabled={loading || !smartContract}
@@ -165,12 +167,14 @@ export default function SmartContractStudio({ selectedContractId }) {
 
           <div style={{ display: 'flex', gap: '0.35rem', background: '#f5f0e6', padding: '0.25rem', borderRadius: '6px' }}>
             <button
+              data-testid="tab-sc-rules"
               className={`btn btn-sm ${viewTab === 'rules' ? 'btn-primary' : 'btn-secondary'}`}
               onClick={() => setViewTab('rules')}
             >
               <span>Rules & Milestones</span>
             </button>
             <button
+              data-testid="tab-sc-solidity"
               className={`btn btn-sm ${viewTab === 'solidity' ? 'btn-primary' : 'btn-secondary'}`}
               onClick={() => setViewTab('solidity')}
             >
@@ -178,6 +182,7 @@ export default function SmartContractStudio({ selectedContractId }) {
               <span>Solidity 0.8.24</span>
             </button>
             <button
+              data-testid="tab-sc-triggers"
               className={`btn btn-sm ${viewTab === 'triggers' ? 'btn-primary' : 'btn-secondary'}`}
               onClick={() => setViewTab('triggers')}
             >

@@ -34,8 +34,8 @@ export default function SignOffModal({
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content signoff-modal-content" onClick={e => e.stopPropagation()}>
+    <div className="modal-overlay" onClick={onClose} data-testid="signoff-modal-overlay">
+      <div className="modal-content signoff-modal-content" onClick={e => e.stopPropagation()} data-testid="signoff-modal">
         <div className="signoff-header">
           <div className="signoff-header-badge">
             <ShieldCheck size={24} className="text-emerald-700" />
@@ -46,7 +46,7 @@ export default function SignOffModal({
               Issue an immutable review certification and lock the contract version.
             </p>
           </div>
-          <button className="signoff-close-btn" onClick={onClose}>
+          <button className="signoff-close-btn" onClick={onClose} data-testid="btn-close-signoff">
             <X size={18} />
           </button>
         </div>
@@ -79,6 +79,7 @@ export default function SignOffModal({
               <div className="form-group">
                 <label className="form-label">Reviewing Counsel Name</label>
                 <input 
+                  data-testid="input-signoff-name"
                   type="text" 
                   className="form-input" 
                   value={counselName}
@@ -89,6 +90,7 @@ export default function SignOffModal({
               <div className="form-group">
                 <label className="form-label">Title / Department</label>
                 <input 
+                  data-testid="input-signoff-title"
                   type="text" 
                   className="form-input" 
                   value={counselTitle}
@@ -101,6 +103,7 @@ export default function SignOffModal({
             <div className="form-group">
               <label className="form-label">Counsel Attestation Notes</label>
               <textarea 
+                data-testid="input-signoff-notes"
                 className="form-input" 
                 rows={3}
                 value={notes}
@@ -119,17 +122,21 @@ export default function SignOffModal({
               <button className="btn btn-secondary" onClick={onClose}>
                 Return to Reviewer
               </button>
-              <button className="btn btn-primary btn-gold-shimmer" onClick={handleSign}>
+              <button 
+                data-testid="btn-execute-signoff"
+                className="btn btn-primary btn-gold-shimmer" 
+                onClick={handleSign}
+              >
                 <Award size={16} />
                 <span>Affix Digital Signature & Seal</span>
               </button>
             </div>
           </div>
         ) : (
-          <div className="signoff-complete-view animate-fade-in">
+          <div className="signoff-complete-view animate-fade-in" data-testid="signoff-sealed-view">
             <div className="seal-certificate-card">
               <div className="seal-stamp-wrapper">
-                <div className="legal-seal-stamp">
+                <div className="legal-seal-stamp" data-testid="legal-seal-stamp">
                   <div className="seal-star">★ ★ ★</div>
                   <div className="seal-center-text">LEGALSIGHT</div>
                   <div className="seal-verified">VERIFIED & APPROVED</div>
@@ -158,7 +165,7 @@ export default function SignOffModal({
                 <FileText size={15} />
                 <span>Export Audit JSON</span>
               </button>
-              <button className="btn btn-secondary" onClick={onClose}>
+              <button className="btn btn-secondary" onClick={onClose} data-testid="btn-signoff-done">
                 <span>Done</span>
               </button>
             </div>

@@ -63,6 +63,7 @@ export default function SearchHub({ onSelectContract }) {
             <div style={{ position: 'relative', flex: 1 }}>
               <Search size={18} style={{ position: 'absolute', left: '14px', top: '14px', color: '#948b81' }} />
               <input 
+                data-testid="search-query-input"
                 className="form-input"
                 type="text" 
                 placeholder="Search across all contracts, clauses, and precedents..."
@@ -71,7 +72,13 @@ export default function SearchHub({ onSelectContract }) {
                 style={{ paddingLeft: '2.75rem', paddingRight: '1rem', height: '48px', fontSize: '0.95rem' }}
               />
             </div>
-            <button type="submit" className="btn btn-primary" disabled={loading} style={{ padding: '0 1.85rem' }}>
+            <button 
+              data-testid="btn-submit-search"
+              type="submit" 
+              className="btn btn-primary" 
+              disabled={loading} 
+              style={{ padding: '0 1.85rem' }}
+            >
               {loading ? 'Searching...' : 'Search Precedents'}
             </button>
           </div>
@@ -82,6 +89,7 @@ export default function SearchHub({ onSelectContract }) {
             {quickSearches.map((qs) => (
               <button
                 key={qs}
+                data-testid={`quick-query-${qs.toLowerCase().replace(/\s+/g, '-')}`}
                 type="button"
                 onClick={() => {
                   setQuery(qs);
@@ -143,7 +151,7 @@ export default function SearchHub({ onSelectContract }) {
       </div>
 
       {/* Results Section */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <div data-testid="search-results-list" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1c1917', fontFamily: 'var(--font-serif)' }}>
             Search Results ({results.length} Matches Found)

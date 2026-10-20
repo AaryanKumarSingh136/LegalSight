@@ -69,8 +69,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay" onClick={onClose} data-testid="auth-modal-overlay">
+      <div className="modal-content" onClick={(e) => e.stopPropagation()} data-testid="auth-modal">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
           <div>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1c1917', fontFamily: 'var(--font-serif)' }}>
@@ -81,6 +81,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
             </p>
           </div>
           <button 
+            data-testid="btn-close-auth"
             onClick={onClose} 
             style={{ background: 'transparent', border: 'none', color: '#948b81', cursor: 'pointer' }}
           >
@@ -103,6 +104,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
             <button 
               type="button"
+              data-testid="btn-demo-analyst"
               className="btn btn-secondary btn-sm" 
               onClick={() => handleDemoLogin('Analyst')}
               disabled={loading}
@@ -113,6 +115,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
             </button>
             <button 
               type="button"
+              data-testid="btn-demo-admin"
               className="btn btn-secondary btn-sm" 
               onClick={() => handleDemoLogin('Admin')}
               disabled={loading}
@@ -125,7 +128,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         </div>
 
         {error && (
-          <div style={{ 
+          <div data-testid="auth-error-msg" style={{ 
             background: '#fee2e2', 
             border: '1px solid #fecaca', 
             color: '#991b1b', 
@@ -151,6 +154,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
             <div style={{ position: 'relative' }}>
               <User size={14} style={{ position: 'absolute', left: '10px', top: '12px', color: '#948b81' }} />
               <input 
+                data-testid="input-auth-username"
                 type="text" 
                 className="form-input" 
                 style={{ paddingLeft: '2.2rem' }}
@@ -168,6 +172,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
               <div style={{ position: 'relative' }}>
                 <Mail size={14} style={{ position: 'absolute', left: '10px', top: '12px', color: '#948b81' }} />
                 <input 
+                  data-testid="input-auth-email"
                   type="email" 
                   className="form-input" 
                   style={{ paddingLeft: '2.2rem' }}
@@ -185,6 +190,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
             <div style={{ position: 'relative' }}>
               <Lock size={14} style={{ position: 'absolute', left: '10px', top: '12px', color: '#948b81' }} />
               <input 
+                data-testid="input-auth-password"
                 type="password" 
                 className="form-input" 
                 style={{ paddingLeft: '2.2rem' }}
@@ -200,6 +206,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
             <div>
               <label className="form-label">Account Role</label>
               <select 
+                data-testid="select-auth-role"
                 className="form-select"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
@@ -211,6 +218,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
           )}
 
           <button 
+            data-testid="btn-auth-submit"
             type="submit" 
             className="btn btn-primary" 
             disabled={loading}
@@ -223,6 +231,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         <div style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: '0.775rem', color: '#78716c' }}>
           {isLogin ? "Don't have an account yet?" : "Already registered?"}{' '}
           <button 
+            data-testid="btn-toggle-auth-mode"
             type="button"
             onClick={() => { setIsLogin(!isLogin); setError(null); }}
             style={{ background: 'transparent', border: 'none', color: '#c29037', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}

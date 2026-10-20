@@ -66,11 +66,16 @@ export default function ReportsHub() {
           </div>
 
           <div style={{ display: 'flex', gap: '0.85rem', flexWrap: 'wrap' }}>
-            <button className="btn btn-secondary" onClick={handleExportJson}>
+            <button 
+              data-testid="btn-export-portfolio-json"
+              className="btn btn-secondary" 
+              onClick={handleExportJson}
+            >
               <Download size={15} />
               <span>Export Portfolio JSON</span>
             </button>
             <button 
+              data-testid="btn-download-exec-pdf"
               className="btn btn-primary" 
               onClick={() => {
                 window.open('/api/export/pdf/cnt_sample_msa', '_blank');
@@ -219,7 +224,7 @@ export default function ReportsHub() {
             </span>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
+          <div data-testid="deadlines-list-container" style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
             {deadlines.map((dl) => (
               <div 
                 key={dl.id}

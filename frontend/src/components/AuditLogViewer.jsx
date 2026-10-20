@@ -55,6 +55,7 @@ export default function AuditLogViewer() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
               <span style={{ fontSize: '0.75rem', color: '#78716c', fontWeight: 600 }}>Filter Severity:</span>
               <select 
+                data-testid="select-audit-severity"
                 className="form-select"
                 style={{ width: 'auto', padding: '0.3rem 0.65rem', fontSize: '0.775rem' }}
                 value={severityFilter}
@@ -68,7 +69,12 @@ export default function AuditLogViewer() {
               </select>
             </div>
 
-            <button className="btn btn-secondary btn-sm" onClick={fetchLogs} disabled={loading}>
+            <button 
+              data-testid="btn-refresh-audit"
+              className="btn btn-secondary btn-sm" 
+              onClick={fetchLogs} 
+              disabled={loading}
+            >
               <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
               <span>Refresh Ledger</span>
             </button>
@@ -85,7 +91,7 @@ export default function AuditLogViewer() {
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.825rem' }}>
+            <table data-testid="audit-events-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.825rem' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border-subtle)', color: '#78716c', textAlign: 'left' }}>
                   <th style={{ padding: '0.65rem 0.85rem' }}>Timestamp</th>

@@ -65,6 +65,7 @@ export default function AdminConsole({ currentUser }) {
 
           <div style={{ display: 'flex', gap: '0.45rem', background: '#f4f0e8', padding: '0.3rem', borderRadius: '10px' }}>
             <button 
+              data-testid="tab-admin-users"
               className={`tab-btn ${activeTab === 'users' ? 'active' : ''}`}
               onClick={() => setActiveTab('users')}
               style={{
@@ -85,6 +86,7 @@ export default function AdminConsole({ currentUser }) {
               <span>User Accounts ({users.length})</span>
             </button>
             <button 
+              data-testid="tab-admin-playbooks"
               className={`tab-btn ${activeTab === 'playbooks' ? 'active' : ''}`}
               onClick={() => setActiveTab('playbooks')}
               style={{
@@ -105,6 +107,7 @@ export default function AdminConsole({ currentUser }) {
               <span>Playbook Tuning</span>
             </button>
             <button 
+              data-testid="tab-admin-models"
               className={`tab-btn ${activeTab === 'models' ? 'active' : ''}`}
               onClick={() => setActiveTab('models')}
               style={{

@@ -216,6 +216,7 @@ export default function Dashboard({
               </div>
             </div>
             <button 
+              data-testid="btn-sample-msa"
               className="btn btn-primary"
               onClick={() => handleSampleTrigger('sample_msa')}
               disabled={loading}
@@ -246,6 +247,7 @@ export default function Dashboard({
               </div>
             </div>
             <button 
+              data-testid="btn-sample-spa"
               className="btn btn-primary"
               onClick={() => handleSampleTrigger('sample_spa')}
               disabled={loading}
@@ -276,6 +278,7 @@ export default function Dashboard({
               </div>
             </div>
             <button 
+              data-testid="btn-sample-nda"
               className="btn btn-primary"
               onClick={() => handleSampleTrigger('sample_nda')}
               disabled={loading}
@@ -378,6 +381,7 @@ export default function Dashboard({
               ].map((pb) => (
                 <div 
                   key={pb.name}
+                  data-testid={`playbook-item-${pb.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
                   onClick={() => setSelectedPlaybook(pb.name)}
                   style={{
                     padding: '0.85rem 1.15rem',
@@ -420,6 +424,7 @@ export default function Dashboard({
             <div style={{ position: 'relative' }}>
               <Search size={15} style={{ position: 'absolute', left: '10px', top: '10px', color: '#948b81' }} />
               <input 
+                data-testid="input-repo-search"
                 type="text" 
                 placeholder="Search repository..."
                 className="form-input"

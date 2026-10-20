@@ -250,12 +250,18 @@ export default function Reviewer({
           </div>
 
           {/* Export & Sign-Off Buttons */}
-          <button className="btn btn-secondary btn-sm" onClick={handleExportPdf} title="Export executive report as PDF">
+          <button 
+            data-testid="btn-export-pdf"
+            className="btn btn-secondary btn-sm" 
+            onClick={handleExportPdf} 
+            title="Export executive report as PDF"
+          >
             <Download size={14} />
             <span>PDF Brief</span>
           </button>
 
           <button 
+            data-testid="btn-open-signoff"
             className="btn btn-gold-shimmer btn-sm"
             onClick={() => setIsSignOffModalOpen(true)}
           >
@@ -282,6 +288,7 @@ export default function Reviewer({
           <div className="pane-header" style={{ padding: '0.75rem 1.25rem' }}>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               <button 
+                data-testid="tab-reviewer-clauses"
                 className={`tab-btn ${activeTab === 'clauses' ? 'active' : ''}`}
                 onClick={() => setActiveTab('clauses')}
                 style={{
@@ -304,6 +311,7 @@ export default function Reviewer({
               </button>
 
               <button 
+                data-testid="tab-reviewer-summary"
                 className={`tab-btn ${activeTab === 'summary' ? 'active' : ''}`}
                 onClick={() => setActiveTab('summary')}
                 style={{
@@ -326,6 +334,7 @@ export default function Reviewer({
               </button>
 
               <button 
+                data-testid="tab-reviewer-entities"
                 className={`tab-btn ${activeTab === 'entities' ? 'active' : ''}`}
                 onClick={() => setActiveTab('entities')}
                 style={{
@@ -348,6 +357,7 @@ export default function Reviewer({
               </button>
 
               <button 
+                data-testid="tab-reviewer-audit"
                 className={`tab-btn ${activeTab === 'audit' ? 'active' : ''}`}
                 onClick={() => setActiveTab('audit')}
                 style={{

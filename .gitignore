@@ -50,3 +50,7 @@ frontend/dist/
 *.swo
 .DS_Store
 Thumbs.db
+
+# Root SQLite test runner database
+/legalsight.db
+test_print*.pdf

@@ -28,6 +28,7 @@ export default function Header({
 
       <nav className="nav-links">
         <button 
+          data-testid="nav-dashboard"
           className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
           onClick={() => setActiveTab('dashboard')}
         >
@@ -36,6 +37,7 @@ export default function Header({
         </button>
 
         <button 
+          data-testid="nav-reviewer"
           className={`nav-item ${activeTab === 'reviewer' ? 'active' : ''}`}
           onClick={() => setActiveTab('reviewer')}
         >
@@ -49,6 +51,7 @@ export default function Header({
         </button>
 
         <button 
+          data-testid="nav-datasets"
           className={`nav-item ${activeTab === 'datasets' ? 'active' : ''}`}
           onClick={() => setActiveTab('datasets')}
         >
@@ -57,6 +60,7 @@ export default function Header({
         </button>
 
         <button 
+          data-testid="nav-reports"
           className={`nav-item ${activeTab === 'reports' ? 'active' : ''}`}
           onClick={() => setActiveTab('reports')}
         >
@@ -65,6 +69,7 @@ export default function Header({
         </button>
 
         <button 
+          data-testid="nav-search"
           className={`nav-item ${activeTab === 'search' ? 'active' : ''}`}
           onClick={() => setActiveTab('search')}
         >
@@ -73,6 +78,7 @@ export default function Header({
         </button>
 
         <button 
+          data-testid="nav-smart_contracts"
           className={`nav-item ${activeTab === 'smart_contracts' ? 'active' : ''}`}
           onClick={() => setActiveTab('smart_contracts')}
         >
@@ -81,6 +87,7 @@ export default function Header({
         </button>
 
         <button 
+          data-testid="nav-admin"
           className={`nav-item ${activeTab === 'admin' ? 'active' : ''}`}
           onClick={() => setActiveTab('admin')}
         >
@@ -89,6 +96,7 @@ export default function Header({
         </button>
 
         <button 
+          data-testid="nav-audit"
           className={`nav-item ${activeTab === 'audit' ? 'active' : ''}`}
           onClick={() => setActiveTab('audit')}
         >
@@ -100,13 +108,14 @@ export default function Header({
       <div className="user-controls">
         {currentUser ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-            <div className="user-badge">
+            <div className="user-badge" data-testid="user-profile-badge">
               <span style={{ fontWeight: 700, color: '#1c1917' }}>{currentUser.username}</span>
               <span className={`role-tag ${currentUser.role === 'Admin' ? 'admin' : ''}`}>
                 {currentUser.role}
               </span>
             </div>
             <button 
+              data-testid="btn-logout"
               className="btn btn-secondary btn-sm" 
               onClick={onLogout}
               title="Sign out"
@@ -116,7 +125,11 @@ export default function Header({
             </button>
           </div>
         ) : (
-          <button className="btn btn-primary btn-sm" onClick={onOpenAuth}>
+          <button 
+            data-testid="btn-open-auth"
+            className="btn btn-primary btn-sm" 
+            onClick={onOpenAuth}
+          >
             <LogIn size={13} />
             <span>Sign In / 1-Click Demo</span>
           </button>
